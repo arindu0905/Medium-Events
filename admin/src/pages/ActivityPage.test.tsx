@@ -82,6 +82,7 @@ describe('ActivityPage', () => {
   it('filters by person, action and dates in Maldives time', async () => {
     renderAs('admin');
     await screen.findAllByRole('row');
+    await screen.findByRole('option', { name: 'Sam Sales' });
     fireEvent.change(screen.getByLabelText('Person'), { target: { value: 'u-sales' } });
     fireEvent.change(screen.getByLabelText('Action'), { target: { value: 'update' } });
     fireEvent.change(screen.getByLabelText('From'), { target: { value: '2026-10-01' } });
