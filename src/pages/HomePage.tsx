@@ -61,7 +61,7 @@ export default function HomePage() {
         <SectionHeader
           eyebrow="Event series"
           title="Four series. One audience of decision makers."
-          intro="Each series brings government and private-sector leaders together around one industry, every year."
+          intro="Each series brings government and private-sector leaders together around one industry."
         />
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {EVENT_SERIES.map((series, i) => {

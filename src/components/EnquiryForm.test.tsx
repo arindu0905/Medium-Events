@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router';
+import { Link, MemoryRouter } from 'react-router';
 import { EnquiryForm } from './EnquiryForm';
 import { SERVICE_OPTIONS } from '../data/websiteData';
 import { trackEvent } from '../lib/analytics';
@@ -158,5 +158,26 @@ describe('EnquiryForm review fixes', () => {
     fireEvent.click(screen.getByRole('button', { name: /Send enquiry/i }));
     expect(await screen.findByText(/MEDIUM will be in touch/)).toBeTruthy();
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('forgets the event when the visitor switches to a plain sponsorship enquiry', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ success: true })));
+    vi.stubGlobal('fetch', fetchMock);
+    render(
+      <MemoryRouter initialEntries={['/contact?event=Build%20Expo']}>
+        <Link to="/contact?service=sponsorship">switch</Link>
+        <EnquiryForm />
+      </MemoryRouter>,
+    );
+    fireEvent.click(screen.getByRole('link', { name: 'switch' }));
+    fireEvent.change(screen.getByLabelText(/^Full name/), { target: { value: 'Aisha' } });
+    fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: 'aisha@co.mv' } });
+    fireEvent.change(screen.getByLabelText(/^Phone/), { target: { value: '7771234' } });
+    fireEvent.change(screen.getByLabelText(/^Your message/), { target: { value: 'General sponsorship question.' } });
+    fireEvent.click(screen.getByRole('button', { name: /Send enquiry/i }));
+    await screen.findByText(/MEDIUM will be in touch/);
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(body.event).toBe('');
+    expect(body.subject).toBe('New enquiry: Sponsorship or exhibition stand');
   });
 });

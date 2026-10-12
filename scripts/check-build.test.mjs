@@ -29,6 +29,7 @@ const valid = () => ({
   'about/index.html': page({ title: 'About' }),
   'sitemap.xml': '<urlset/>',
   'robots.txt': 'User-agent: *',
+  '404.html': '<title>Page not found</title><meta name="robots" content="noindex"><div id="root"><main>Not found</main></div></body>',
 });
 
 afterEach(() => dir && rmSync(dir, { recursive: true, force: true }));
@@ -59,6 +60,14 @@ describe('checkBuild', () => {
   it('flags an empty app root', () => {
     const files = { ...valid(), 'about/index.html': page({ title: 'About', root: '' }) };
     expect(checkBuild(makeDist(files), routes).join('\n')).toMatch(/\/about.*root/i);
+  });
+
+  it('flags a missing or indexable 404 page', () => {
+    const files = valid();
+    delete files['404.html'];
+    expect(checkBuild(makeDist(files), routes).join('\n')).toMatch(/404\.html/);
+    const indexable = { ...valid(), '404.html': '<title>Page not found</title><div id="root"><main>x</main></div></body>' };
+    expect(checkBuild(makeDist(indexable), routes).join('\n')).toMatch(/404\.html.*noindex/);
   });
 
   it('flags missing sitemap and robots', () => {

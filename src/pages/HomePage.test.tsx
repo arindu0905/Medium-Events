@@ -66,4 +66,9 @@ describe('HomePage', () => {
     expect(within(main).getByRole('heading', { name: 'Put your brand in front of the decision makers.' })).toBeTruthy();
     expect(within(main).getByText('Sponsorship and exhibition packages for every series.')).toBeTruthy();
   });
+
+  it('does not claim every series runs every year', () => {
+    const main = renderHome();
+    expect(main.textContent).not.toMatch(/every year|annual series/i);
+  });
 });

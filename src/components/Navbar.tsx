@@ -12,8 +12,8 @@ export const Navbar: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const route = routeForPath(pathname);
-  // Series pages live under Events in the navigation
-  const activeId = route?.kind === 'series' ? 'events' : (route?.id ?? 'home');
+  // Series pages live under Events in the navigation; unknown addresses mark nothing
+  const activeId = route?.kind === 'series' ? 'events' : route?.id;
 
   useEffect(() => setMenuOpen(false), [pathname]);
   const closeMenu = () => setMenuOpen(false);

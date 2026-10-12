@@ -8,13 +8,14 @@ import SeriesPage from './pages/SeriesPage';
 import AboutPage from './pages/AboutPage';
 import NewsPage from './pages/NewsPage';
 import ContactPage from './pages/ContactPage';
+import NotFoundPage from './pages/NotFoundPage';
 import { seriesBySlug } from './data/websiteData';
 import { pathFor } from './routes';
 
-// Unknown series slugs fall back to the events overview
+// Unknown series slugs get the not-found page
 function SeriesRoute() {
   const series = seriesBySlug(useParams().slug ?? '');
-  return series ? <SeriesPage key={series.slug} series={series} /> : <EventsPage />;
+  return series ? <SeriesPage key={series.slug} series={series} /> : <NotFoundPage />;
 }
 
 export function AppRoutes() {
@@ -28,7 +29,7 @@ export function AppRoutes() {
         <Route path={pathFor('about')} element={<AboutPage />} />
         <Route path={pathFor('news')} element={<NewsPage />} />
         <Route path={pathFor('contact')} element={<ContactPage />} />
-        <Route path="*" element={<HomePage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
   );

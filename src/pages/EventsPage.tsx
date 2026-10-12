@@ -11,7 +11,7 @@ export default function EventsPage() {
       <PageHeader
         eyebrow="Forums and exhibitions"
         title="Events"
-        intro="MEDIUM organises four annual series that bring together government and private-sector decision makers from the Maldives' construction, marine and aviation industries."
+        intro="MEDIUM organises four series that bring together government and private-sector decision makers from the Maldives' construction, marine and aviation industries."
       />
 
       <Section>

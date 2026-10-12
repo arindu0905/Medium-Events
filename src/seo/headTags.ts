@@ -5,6 +5,9 @@ import type { RouteMeta } from '../routes';
 const OG_IMAGE_SIZES: Record<string, [number, number]> = {
   '/images/fb/cif-2025.jpg': [960, 453],
   '/images/fb/ooredoo-cif-2026-signing.jpg': [2048, 1365],
+  '/images/fb/mmif-2025.jpg': [960, 453],
+  '/images/fb/aviation-forum-2026.jpg': [960, 540],
+  '/images/fb/build-expo-2025.jpg': [960, 381],
 };
 
 const escapeHtml = (value: string) =>

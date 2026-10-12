@@ -4,6 +4,7 @@ import { StaticRouter } from 'react-router';
 import { AppRoutes } from './AppRoutes';
 
 export { ROUTES } from './routes';
+export { NOT_FOUND_TITLE } from './pages/NotFoundPage';
 export { SITE_URL } from './config';
 export { buildHeadTags } from './seo/headTags';
 export { jsonLdForRoute } from './seo/structuredData';

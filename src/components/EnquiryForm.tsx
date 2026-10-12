@@ -24,6 +24,8 @@ const EMPTY_FORM: EnquirySubmission = {
   message: '',
 };
 
+const eventMessage = (event: string) => `I'd like to discuss sponsorship or an exhibition stand at ${event}.`;
+
 const telHref = (phone: string) => `tel:${phone.replace(/[^0-9+]/g, '')}`;
 
 const FIELD =
@@ -39,18 +41,22 @@ export const EnquiryForm: React.FC = () => {
   const isSubmitting = sendState === 'sending';
   const honeypotRef = useRef<HTMLInputElement>(null);
 
-  // Prefill from /contact?service= or ?event= (applied after mount so it matches the pre-rendered HTML)
+  // Prefill from /contact?service= or ?event= (applied after mount so it matches the pre-rendered HTML).
+  // Runs on every query change, so an event from an earlier link never sticks to a later enquiry.
   useEffect(() => {
     const match = SERVICE_OPTIONS.find((o) => o.id === prefilledService);
-    if (match) setFormData((prev) => ({ ...prev, service: match.label }));
-    if (prefilledEvent) {
-      setFormData((prev) => ({
-        ...prev,
-        event: prefilledEvent,
-        service: SPONSORSHIP,
-        message: prev.message || `I'd like to discuss sponsorship or an exhibition stand at ${prefilledEvent}.`,
-      }));
-    }
+    setFormData((prev) => {
+      const messageWasPrefilled = Boolean(prev.event) && prev.message === eventMessage(prev.event!);
+      const next = { ...prev, event: prefilledEvent ?? undefined };
+      if (match) next.service = match.label;
+      if (prefilledEvent) {
+        next.service = SPONSORSHIP;
+        if (!prev.message || messageWasPrefilled) next.message = eventMessage(prefilledEvent);
+      } else if (messageWasPrefilled) {
+        next.message = '';
+      }
+      return next;
+    });
   }, [prefilledService, prefilledEvent]);
 
   const update = (field: keyof EnquirySubmission) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>

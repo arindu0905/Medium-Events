@@ -99,4 +99,12 @@ describe('sitemap and robots', () => {
     expect(robots).toContain('Allow: /');
     expect(robots).toContain('Sitemap: https://medium.mv/sitemap.xml');
   });
+
+  it('declares image dimensions for every page share image', () => {
+    for (const route of ROUTES) {
+      const head = buildHeadTags(route, 'https://medium.mv', []);
+      expect(head, route.path).toMatch(/og:image:width" content="\d+"/);
+      expect(head, route.path).toMatch(/og:image:height" content="\d+"/);
+    }
+  });
 });

@@ -4,7 +4,7 @@ import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const dist = resolve('dist');
-const { render, ROUTES, SITE_URL, buildHeadTags, jsonLdForRoute, buildSitemap, buildRobots } = await import(
+const { render, ROUTES, SITE_URL, NOT_FOUND_TITLE, buildHeadTags, jsonLdForRoute, buildSitemap, buildRobots } = await import(
   pathToFileURL(resolve('dist-ssr/entry-server.js')).href
 );
 
@@ -23,6 +23,16 @@ for (const route of ROUTES) {
     writeFileSync(file, html);
   }
 }
+
+// Not-found page: static hosts serve dist/404.html for unknown addresses
+const notFoundHead = [
+  `<title>${NOT_FOUND_TITLE}</title>`,
+  '<meta name="robots" content="noindex">',
+].join('\n    ');
+writeFileSync(
+  join(dist, '404.html'),
+  template.replace('<!--app-head-->', () => notFoundHead).replace('<!--app-html-->', () => render('/404')),
+);
 
 writeFileSync(join(dist, 'sitemap.xml'), buildSitemap(ROUTES, SITE_URL));
 writeFileSync(join(dist, 'robots.txt'), buildRobots(SITE_URL));

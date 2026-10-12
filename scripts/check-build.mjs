@@ -30,6 +30,10 @@ export function checkBuild(distDir, routes) {
     if (!attr(html, /<div id="root">([\s\S]*?)<\/div>\s*(?:<script|<\/body>)/)) problems.push(`${path}: empty app root (not pre-rendered)`);
   }
 
+  const notFound = join(distDir, '404.html');
+  if (!existsSync(notFound)) problems.push('missing 404.html');
+  else if (!/<meta name="robots" content="noindex"/.test(readFileSync(notFound, 'utf8'))) problems.push('404.html must be noindex');
+
   for (const file of ['sitemap.xml', 'robots.txt']) {
     if (!existsSync(join(distDir, file))) problems.push(`missing ${file}`);
   }

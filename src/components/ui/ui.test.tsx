@@ -80,4 +80,20 @@ describe('layout primitives', () => {
     inRouter(<Card to="/events/build-expo">Build Expo</Card>);
     expect(screen.getByRole('link', { name: 'Build Expo' }).getAttribute('href')).toBe('/events/build-expo');
   });
+
+  it('gives buttons on blue bands a white focus ring', () => {
+    inRouter(
+      <>
+        <Button variant="inverse" to="/a">On blue</Button>
+        <Button variant="inverse-outline" to="/b">Outline on blue</Button>
+        <Button to="/c">On white</Button>
+      </>,
+    );
+    for (const name of ['On blue', 'Outline on blue']) {
+      const cls = screen.getByRole('link', { name }).className;
+      expect(cls).toContain('focus-visible:outline-white');
+      expect(cls).not.toContain('focus-visible:outline-brand');
+    }
+    expect(screen.getByRole('link', { name: 'On white' }).className).toContain('focus-visible:outline-brand');
+  });
 });

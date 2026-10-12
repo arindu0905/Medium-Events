@@ -44,4 +44,11 @@ describe('WhatsAppButton', () => {
     renderAt('/contact/');
     expect(screen.queryByRole('link', { name: 'Chat with MEDIUM on WhatsApp' })).toBeNull();
   });
+
+  it('shows a brand-coloured focus ring that is visible on white pages', () => {
+    renderAt('/');
+    const cls = screen.getByRole('link', { name: 'Chat with MEDIUM on WhatsApp' }).className;
+    expect(cls).toContain('focus-visible:outline-brand');
+    expect(cls).not.toContain('ring-white');
+  });
 });

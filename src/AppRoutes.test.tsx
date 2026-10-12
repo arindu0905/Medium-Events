@@ -26,6 +26,7 @@ describe('AppRoutes', () => {
     renderAt('/events');
     expect((await screen.findByRole('heading', { level: 1 })).textContent).toBe('Events');
     expect(screen.getByRole('heading', { name: "Events we've delivered" })).toBeTruthy();
+    expect(screen.getByRole('main').textContent).not.toMatch(/every year|annual series/i);
     expect(within(screen.getByRole('main')).getAllByRole('article')).toHaveLength(9);
     for (const label of ['All', 'Construction Industry Forum', 'Marine Industry Forum', 'Aviation Forum', 'Build Expo']) {
       expect(screen.getByRole('button', { name: label })).toBeTruthy();
@@ -69,5 +70,11 @@ describe('AppRoutes', () => {
     renderAt('/contact/');
     await screen.findAllByRole('heading');
     expect(trackPageView).toHaveBeenCalledWith('/contact', 'Contact and sponsorship | MEDIUM Events Maldives');
+  });
+
+  it('shows the not-found page for unknown addresses', async () => {
+    renderAt('/does-not-exist');
+    expect((await screen.findByRole('heading', { level: 1 })).textContent).toBe('Page not found');
+    expect(within(screen.getByRole('main')).getByRole('link', { name: 'Go to the home page' }).getAttribute('href')).toBe('/');
   });
 });

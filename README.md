@@ -33,7 +33,8 @@ Pages are listed once in `src/routes.ts`. Adding a page there adds it to the rou
 1. Copy `.env.example` to `.env` and fill in the values below.
 2. Run `npm run build`.
 3. Upload the contents of `dist/` to any static host (Vercel, Netlify, Cloudflare Pages, cPanel/Apache, etc.). Every page is a real HTML file, so no server is needed.
-   - **Apache / cPanel:** the included `.htaccess` serves `/contact` from `contact.html` instead of redirecting to `/contact/`. Make sure hidden files are uploaded and `mod_rewrite` is enabled. After launch, check that `https://medium.mv/contact` loads without a redirect.
+   - **Do not add a single-page-app rewrite** (e.g. "/* → /index.html"). Unknown addresses should get `404.html`, which Netlify, Vercel, Cloudflare Pages and GitHub Pages serve automatically.
+   - **Apache / cPanel:** the included `.htaccess` serves `/contact` from `contact.html` instead of redirecting to `/contact/`, and serves `404.html` for unknown addresses. Make sure hidden files are uploaded and `mod_rewrite` is enabled. After launch, check that `https://medium.mv/contact` loads without a redirect.
 
 | Variable | Purpose | If empty |
 |---|---|---|

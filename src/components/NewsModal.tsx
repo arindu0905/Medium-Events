@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { X, Calendar } from 'lucide-react';
 import { NewsArticle } from '../types';
 import { Button } from './ui';
@@ -10,12 +10,43 @@ interface NewsModalProps {
 }
 
 export const NewsModal: React.FC<NewsModalProps> = ({ article, onClose }) => {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
+  // Modal behaviour: focus moves in, Tab stays inside, Escape closes, focus returns, page doesn't scroll
   useEffect(() => {
     if (!article) return;
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [article, onClose]);
+    const returnFocusTo = document.activeElement as HTMLElement | null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    closeRef.current?.focus();
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onCloseRef.current();
+        return;
+      }
+      if (e.key !== 'Tab' || !dialogRef.current) return;
+      const focusable = dialogRef.current.querySelectorAll<HTMLElement>('a[href], button:not([disabled])');
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = previousOverflow;
+      returnFocusTo?.focus();
+    };
+  }, [article]);
 
   if (!article) return null;
 
@@ -23,6 +54,7 @@ export const NewsModal: React.FC<NewsModalProps> = ({ article, onClose }) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
       <div className="fixed inset-0 bg-ink/60" onClick={onClose} aria-hidden="true" />
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="news-modal-title"
@@ -30,6 +62,7 @@ export const NewsModal: React.FC<NewsModalProps> = ({ article, onClose }) => {
       >
         <img src={article.image} alt="" width={960} height={480} className="w-full aspect-[2/1] object-cover" />
         <button
+          ref={closeRef}
           type="button"
           onClick={onClose}
           aria-label="Close"

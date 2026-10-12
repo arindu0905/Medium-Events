@@ -62,9 +62,11 @@ describe('SeriesPage', () => {
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Build Expo');
   });
 
-  it('shows the events page for an unknown series', () => {
+  it('shows the not-found page for an unknown series', () => {
     renderAt('/events/nope');
-    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Events');
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Page not found');
+    expect(within(main()).getByRole('link', { name: 'View all events' }).getAttribute('href')).toBe('/events');
+    expect(within(screen.getByRole('navigation', { name: 'Main' })).queryAllByRole('link', { current: 'page' })).toHaveLength(0);
     expect(screen.queryByRole('heading', { level: 1, name: 'Build Expo' })).toBeNull();
   });
 });
