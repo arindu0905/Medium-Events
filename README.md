@@ -21,6 +21,13 @@ npm run dev
 
 Pages are listed once in `src/routes.ts`. Adding a page there adds it to the router, the pre-rendered output, the sitemap and the build check.
 
+## Content
+
+- All site content lives in `src/data/websiteData.ts`.
+- **Event series pages** (`/events/<slug>`) are generated from `EVENT_SERIES`; each past event in `PAST_EVENTS_DATA` belongs to a series. Adding a new edition (e.g. CIF 2027) is one new entry in `PAST_EVENTS_DATA` plus its banner in `public/images/fb/` — the series page, Home, Events page, structured data and stats update automatically.
+- Only verified facts are used. See `docs/content-to-confirm.md` for removed claims awaiting confirmation; `src/contentGuard.test.tsx` blocks them from returning.
+- Design: colours are defined once in `src/design/palette.ts` (mirrored in `src/index.css`) and checked for WCAG AA contrast by tests; pages are built from the shared components in `src/components/ui/`.
+
 ## Deploying and configuration
 
 1. Copy `.env.example` to `.env` and fill in the values below.

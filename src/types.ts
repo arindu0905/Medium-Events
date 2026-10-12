@@ -4,26 +4,6 @@ export interface ServiceItem {
   tagline: string;
   description: string;
   features: string[];
-  icon: string;
-  accentColor: string;
-  stat: string;
-  statLabel: string;
-}
-
-export interface FlagshipEvent {
-  id: string;
-  name: string;
-  tagline: string;
-  category: string;
-  year: string;
-  dateOrFrequency: string;
-  location: string;
-  endorsements: string[];
-  description: string;
-  highlights: string[];
-  attendees: string;
-  image: string;
-  role: string;
 }
 
 export interface PastEvent {

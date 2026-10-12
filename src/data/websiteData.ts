@@ -1,12 +1,8 @@
-import { ServiceItem, FlagshipEvent, NewsArticle, PastEvent, EventSeries } from '../types';
+import { ServiceItem, NewsArticle, PastEvent, EventSeries } from '../types';
 
 export const COMPANY_DETAILS = {
   name: 'MEDIUM Events Pvt Ltd',
   shortName: 'MEDIUM',
-  tagline: 'Full-Suite Creative Firm & Turnkey Event Management in Maldives',
-  headline: 'Creating Lasting Impressions Through Vision, Precision & Scale',
-  subheadline:
-    'With over 60 years of combined industry expertise, MEDIUM delivers full-suite creative solutions, analytics-driven advertising, and high-impact flagship events across the Maldives.',
   address: 'Champa Building 4, 5th Floor, Orchid Magu, K. Malé, Maldives',
   altAddress: 'H. Huba (2nd Floor), Medhuziyaaraiy Magu, Malé, Maldives',
   phone: '+960 770-1090',
@@ -20,12 +16,6 @@ export const COMPANY_DETAILS = {
     instagram: 'https://www.instagram.com/medium_mv/',
     linkedin: 'https://www.linkedin.com/company/mediummv/',
   },
-  stats: [
-    { value: '60+', label: 'Years Combined Experience', detail: 'Cumulative management team track record' },
-    { value: '15+', label: 'Years Individual Leadership', detail: 'Seasoned directors in specialized domains' },
-    { value: '6+', label: 'Flagship Annual Expos & Forums', detail: 'Including Maldives Marine Expo & CIF' },
-    { value: '100+', label: 'Turnkey Productions', detail: 'Delivered for national associations & enterprises' },
-  ],
 };
 
 export const SERVICES_DATA: ServiceItem[] = [
@@ -43,10 +33,6 @@ export const SERVICES_DATA: ServiceItem[] = [
       'Stage, audio-visual and production',
       'Project management on the day',
     ],
-    icon: 'CalendarDays',
-    accentColor: '#12229D',
-    stat: '9',
-    statLabel: 'events hosted since 2023',
   },
   {
     id: 'advertising',
@@ -61,10 +47,6 @@ export const SERVICES_DATA: ServiceItem[] = [
       'Content creation',
       'Campaign measurement and reporting',
     ],
-    icon: 'TrendingUp',
-    accentColor: '#12229D',
-    stat: '',
-    statLabel: '',
   },
   {
     id: 'design',
@@ -79,10 +61,6 @@ export const SERVICES_DATA: ServiceItem[] = [
       'Concept development',
       'Exhibition and event installations',
     ],
-    icon: 'Palette',
-    accentColor: '#12229D',
-    stat: '',
-    statLabel: '',
   },
   {
     id: 'consultancy',
@@ -96,136 +74,6 @@ export const SERVICES_DATA: ServiceItem[] = [
       'Market insight for the Maldives',
       'Project planning',
     ],
-    icon: 'Compass',
-    accentColor: '#12229D',
-    stat: '',
-    statLabel: '',
-  },
-];
-
-export const FLAGSHIP_EVENTS_DATA: FlagshipEvent[] = [
-  {
-    id: 'marine-expo',
-    name: 'Maldives Marine Expo',
-    tagline: 'The Official Flagship Exhibition of the Boating Industry',
-    category: 'Flagship Marine Exhibition',
-    year: '2025 – 2026',
-    dateOrFrequency: 'Annual Showcase (February 5–8)',
-    location: 'Central Park / Hulhumalé, Maldives',
-    endorsements: ['National Boating Association of Maldives (NBAM)', 'Ministry of Transport'],
-    description:
-      'The premier marine industry exhibition of the Maldives, organized by MEDIUM on behalf of NBAM. Bringing together boat builders, engine manufacturers, water sports innovators, naval architects, and maritime service providers across the Indian Ocean.',
-    highlights: [
-      'Over 100+ national and international marine exhibitors',
-      'Live in-water vessel trials and live demonstration zones',
-      'High-level commercial deals and marine technology debuts',
-      'Official endorsement and patronage by NBAM',
-    ],
-    attendees: '12,000+ Trade & Public Visitors',
-    image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80',
-    role: 'Turnkey Event Organizer & Producer',
-  },
-  {
-    id: 'cif-2026',
-    name: 'Construction Industry Forum (CIF 2026)',
-    tagline: 'Driving Growth, Sustainability & Built Environment Innovation',
-    category: 'National Industry Forum',
-    year: '2026',
-    dateOrFrequency: 'August 18, 2026',
-    location: 'Grand Parkside, One Central Park, Hulhumalé',
-    endorsements: ['Maldives National Association of Construction Industry (MNACI)', 'Ooredoo Maldives (Exclusive Platinum Sponsor)'],
-    description:
-      'An annual gathering of high-level decision makers of the building and construction industry from government and private sectors. Industry leaders and key stakeholders identify the crucial issues facing the Maldives construction industry, present solutions and direct its future. Held every year since 2023 — CIF 2026 is the 4th edition.',
-    highlights: [
-      '4th annual edition — previous editions in 2023, 2024 and 2025',
-      'High-level panels with government and private-sector decision makers',
-      'Recognition certificates presented to industry partners and speakers',
-      'Ooredoo Maldives signed on as Exclusive Platinum Sponsor (July 2026)',
-    ],
-    attendees: '200+ RSVPs on Facebook for CIF 2025',
-    image: '/images/fb/cif-2025.jpg',
-    role: 'Organizer (www.cif.mv)',
-  },
-  {
-    id: 'mmif',
-    name: 'Maldives Marine Industry Forum (MMIF)',
-    tagline: 'Shaping the Future of the Maldives Marine Industry',
-    category: 'Policy & Maritime Forum',
-    year: '3rd Edition (2025)',
-    dateOrFrequency: 'Annual Forum · 1 July 2025',
-    location: 'JEN Malé Maldives by Shangri-La, Malé',
-    endorsements: ['National Boating Association of Maldives (NBAM)', 'Indian Ocean Divers Association (IODA)'],
-    description:
-      'An annual gathering of high-level decision makers of the marine industry from government and private sectors. Industry leaders, decision makers and key stakeholders come together to identify the crucial and fundamental issues facing the marine industry, present solutions and raise awareness.',
-    highlights: [
-      'Three consecutive editions — 2023, 2024 and 2025 at JEN Malé',
-      'Panel discussions with maritime authorities, operators and insurers',
-      'Partners and sponsors from across the Maldivian marine sector',
-    ],
-    attendees: '99 RSVPs on Facebook for MMIF 2023',
-    image: '/images/fb/mmif-2025.jpg',
-    role: 'Organizer (www.mmif.mv)',
-  },
-  {
-    id: 'build-expo',
-    name: 'Build Expo',
-    tagline: 'The Official Exhibition of MNACI',
-    category: 'Construction Exhibition',
-    year: '2025',
-    dateOrFrequency: '24 – 27 April 2025 · 16:00 – 22:00',
-    location: 'Central Park, Hulhumalé',
-    endorsements: ['Maldives National Association of Construction Industry (MNACI)'],
-    description:
-      'The official exhibition of the Maldives National Association of Construction Industry (MNACI). Build Expo features an exhibition and equipment display area, stage activities, networking sessions, product launches and entertainment — a strong opportunity to connect with prospective customers and gain industry recognition.',
-    highlights: [
-      'Exhibition and heavy-equipment display area',
-      'Stage activities and product launches',
-      'Networking sessions for contractors, suppliers and developers',
-      'Four days of evening entertainment at Hulhumalé Central Park',
-    ],
-    attendees: '195 RSVPs on Facebook for Build Expo 2025',
-    image: '/images/fb/build-expo-2025.jpg',
-    role: 'Event Organizer',
-  },
-  {
-    id: 'aviation-forum',
-    name: 'Aviation Forum – Connecting Maldives (AF)',
-    tagline: 'Reshape the Aviation Industry of Maldives, via Stakeholder Dialogue',
-    category: 'Aviation Summit',
-    year: '2024 · 2026',
-    dateOrFrequency: 'Latest edition: 12 May 2026',
-    location: 'Hotel JEN Malé Maldives by Shangri-La',
-    endorsements: ['SITA (Sponsor, AF 2026)'],
-    description:
-      "Join the Maldives' most influential aviation leaders. This premier summit unites high-level government officials and private sector pioneers to collaborate, innovate and redefine the future of the industry — generating actionable solutions and directing the strategic trajectory of Maldivian aviation.",
-    highlights: [
-      'Editions held in April 2024 and May 2026 at JEN Malé',
-      'Dialogue between government officials and private-sector operators',
-      'AF 2026 sponsored by SITA',
-    ],
-    attendees: '223 RSVPs on Facebook for AF 2024',
-    image: '/images/fb/aviation-forum-2026.jpg',
-    role: 'Organizer (www.aviationforum.mv)',
-  },
-  {
-    id: 'hosco',
-    name: 'Hotel Supply Conference (HOSCO)',
-    tagline: 'The Authoritative Hospitality Procurement & Resort Supply Summit',
-    category: 'Procurement Conference',
-    year: 'Annual Convention',
-    dateOrFrequency: 'Annual Hospitality Forum',
-    location: 'Malé / Resort Convention Centers',
-    endorsements: ['Maldives Tourism Industry Partners', 'Resort Purchase Managers Alliance'],
-    description:
-      'Connecting global luxury suppliers with general managers, executive chefs, procurement heads, and chief engineers representing world-renowned Maldivian five-star and ultra-luxury island resorts.',
-    highlights: [
-      'Exclusive 1-on-1 procurement matchmaking meetings',
-      'Sustainability and zero-waste resort supply chain workshops',
-      'Curated showcase of high-end culinary and amenity brands',
-    ],
-    attendees: '400+ Resort Procurement Directors',
-    image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80',
-    role: 'Summit Producer & Delegate Director',
   },
 ];
 
@@ -386,15 +234,6 @@ export const NEWS_ARTICLES_DATA: NewsArticle[] = [
   },
 ];
 
-export const CLIENT_PARTNERS = [
-  { name: 'National Boating Association of Maldives (NBAM)', role: 'Flagship Event Partner' },
-  { name: 'MNACI (Maldives National Association of Construction Industry)', role: 'Endorsing Association' },
-  { name: 'Ooredoo Maldives', role: 'CIF 2026 Exclusive Platinum Sponsor' },
-  { name: 'SITA', role: 'Aviation Forum 2026 Sponsor' },
-  { name: 'Maldives Publications Pvt Ltd', role: 'Publishing Partner' },
-  { name: 'Indian Ocean Divers Association (IODA)', role: 'Endorsing Body' },
-  { name: 'Ministry of Transport & Civil Aviation', role: 'Governmental Endorsement' },
-];
 
 // Event series MEDIUM organises. Facts from the series' Facebook events, posts and banners.
 export const EVENT_SERIES: EventSeries[] = [
