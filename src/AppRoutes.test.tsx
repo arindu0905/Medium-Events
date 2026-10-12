@@ -3,7 +3,6 @@ import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter, useLocation } from 'react-router';
 import { AppRoutes } from './AppRoutes';
 import { contactPath } from './routes';
-import { FLAGSHIP_EVENTS_DATA } from './data/websiteData';
 import { trackPageView } from './lib/analytics';
 
 vi.mock('./lib/analytics', () => ({ initAnalytics: vi.fn(), trackPageView: vi.fn(), trackEvent: vi.fn() }));
@@ -23,10 +22,17 @@ function renderAt(url: string) {
 }
 
 describe('AppRoutes', () => {
-  it('renders the Flagship Events page at /events', async () => {
+  it('renders the Events page at /events', async () => {
     renderAt('/events');
-    expect(await screen.findByRole('heading', { name: 'Nation-Scale Expos & Strategic Forums' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: "Events We've Delivered" })).toBeTruthy();
+    expect((await screen.findByRole('heading', { level: 1 })).textContent).toBe('Events');
+    expect(screen.getByRole('heading', { name: "Events we've delivered" })).toBeTruthy();
+    expect(within(screen.getByRole('main')).getAllByRole('article')).toHaveLength(9);
+    for (const label of ['All', 'Construction Industry Forum', 'Marine Industry Forum', 'Aviation Forum', 'Build Expo']) {
+      expect(screen.getByRole('button', { name: label })).toBeTruthy();
+    }
+    for (const slug of ['construction-industry-forum', 'marine-industry-forum', 'aviation-forum', 'build-expo']) {
+      expect(within(screen.getByRole('main')).getAllByRole('link').some((a) => a.getAttribute('href') === '/events/' + slug)).toBe(true);
+    }
   });
 
   it('renders the Info Center at /news', async () => {
@@ -36,7 +42,7 @@ describe('AppRoutes', () => {
 
   it('redirects legacy hash links on the home page', async () => {
     renderAt('/#events');
-    expect(await screen.findByRole('heading', { name: 'Nation-Scale Expos & Strategic Forums' })).toBeTruthy();
+    expect((await screen.findByRole('heading', { level: 1 })).textContent).toBe('Events');
     expect(screen.getByTestId('location').textContent).toBe('/events');
   });
 
@@ -53,10 +59,10 @@ describe('AppRoutes', () => {
     expect(within(screen.getByRole('contentinfo')).getByRole('link', { name: 'Contact' }).getAttribute('href')).toBe('/contact');
   });
 
-  it('links event sponsorship buttons to a prefilled contact page', async () => {
+  it('links the events page sponsor band to the sponsorship enquiry', async () => {
     renderAt('/events');
-    const links = await screen.findAllByRole('link', { name: /Sponsorship/ });
-    expect(links[0].getAttribute('href')).toBe(contactPath({ event: FLAGSHIP_EVENTS_DATA[0].name }));
+    const links = await within(screen.getByRole('main')).findAllByRole('link', { name: 'Become a sponsor' });
+    expect(links[0].getAttribute('href')).toBe(contactPath({ service: 'sponsorship' }));
   });
 
   it('reports page views under the canonical path', async () => {

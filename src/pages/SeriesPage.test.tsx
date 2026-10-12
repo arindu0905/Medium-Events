@@ -64,7 +64,7 @@ describe('SeriesPage', () => {
 
   it('shows the events page for an unknown series', () => {
     renderAt('/events/nope');
-    expect(screen.getByRole('heading', { name: "Events We've Delivered" })).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Events');
     expect(screen.queryByRole('heading', { level: 1, name: 'Build Expo' })).toBeNull();
   });
 });
