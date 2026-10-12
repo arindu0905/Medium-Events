@@ -9,9 +9,7 @@ import SetPasswordPage from './pages/SetPasswordPage';
 import DashboardPage from './pages/DashboardPage';
 import NotFoundPage from './pages/NotFoundPage';
 import StaffPage from './pages/StaffPage';
-
-// Placeholder until the activity page is built (plan Task 7)
-const ActivityPlaceholder = () => <h1 className="text-2xl font-bold text-ink">Activity log</h1>;
+import ActivityPage from './pages/ActivityPage';
 
 export function AdminRoutes() {
   return (
@@ -23,7 +21,7 @@ export function AdminRoutes() {
           <Route element={<Layout />}>
             <Route index element={<DashboardPage />} />
             <Route path="/staff" element={<RequireAuth roles={rolesFor('staff')}><StaffPage /></RequireAuth>} />
-            <Route path="/activity" element={<RequireAuth roles={rolesFor('activity')}><ActivityPlaceholder /></RequireAuth>} />
+            <Route path="/activity" element={<RequireAuth roles={rolesFor('activity')}><ActivityPage /></RequireAuth>} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Route>
