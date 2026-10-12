@@ -5,6 +5,7 @@ import { Menu, X, ArrowUpRight, Phone, Mail } from 'lucide-react';
 import { Logo } from './Logo';
 import { COMPANY_DETAILS } from '../data/websiteData';
 import { ROUTES, pathFor, routeForPath } from '../routes';
+import { trackEvent } from '../lib/analytics';
 
 const MotionLink = motion.create(Link);
 
@@ -81,6 +82,7 @@ export const Navbar: React.FC = () => {
           <div className="hidden lg:flex items-center gap-3">
             <a
               href={`tel:${COMPANY_DETAILS.phone.replace(/[^0-9+]/g, '')}`}
+              onClick={() => trackEvent('contact_click', { method: 'phone' })}
               className="flex items-center gap-1.5 text-xs font-medium text-slate-300 hover:text-white px-2.5 py-1.5 rounded transition-colors"
               title="Call MEDIUM Operations"
             >
@@ -151,6 +153,7 @@ export const Navbar: React.FC = () => {
               <div className="pt-4 mt-2 border-t border-white/10 space-y-2">
                 <a
                   href={`tel:${COMPANY_DETAILS.phone.replace(/[^0-9+]/g, '')}`}
+                  onClick={() => trackEvent('contact_click', { method: 'phone' })}
                   className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white rounded-lg hover:bg-white/[0.04]"
                 >
                   <Phone className="w-4 h-4 text-blue-400" />
@@ -158,6 +161,7 @@ export const Navbar: React.FC = () => {
                 </a>
                 <a
                   href={`mailto:${COMPANY_DETAILS.email}`}
+                  onClick={() => trackEvent('contact_click', { method: 'email' })}
                   className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white rounded-lg hover:bg-white/[0.04]"
                 >
                   <Mail className="w-4 h-4 text-blue-400" />

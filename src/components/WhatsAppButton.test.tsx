@@ -1,8 +1,11 @@
-import { describe, expect, it } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { WhatsAppButton } from './WhatsAppButton';
 import { buildWhatsAppUrl } from '../lib/enquiry';
+import { trackEvent } from '../lib/analytics';
+
+vi.mock('../lib/analytics', () => ({ trackEvent: vi.fn() }));
 
 const renderAt = (url: string) =>
   render(
@@ -29,5 +32,11 @@ describe('WhatsAppButton', () => {
     expect(home).not.toContain('hidden');
     renderAt('/contact');
     expect(screen.getAllByRole('link', { name: 'Chat with MEDIUM on WhatsApp' })).toHaveLength(1);
+  });
+
+  it('reports clicks to analytics', () => {
+    renderAt('/');
+    fireEvent.click(screen.getByRole('link', { name: 'Chat with MEDIUM on WhatsApp' }));
+    expect(trackEvent).toHaveBeenCalledWith('whatsapp_click', { location: 'floating' });
   });
 });

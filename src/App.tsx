@@ -5,7 +5,9 @@ import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { ScrollProgress } from './components/ScrollProgress';
 import { WhatsAppButton } from './components/WhatsAppButton';
-import { legacyHashToPath } from './routes';
+import { legacyHashToPath, routeForPath } from './routes';
+import { GA_ID } from './config';
+import { initAnalytics, trackPageView } from './lib/analytics';
 import { usePageMeta } from './hooks/usePageMeta';
 
 // Site layout shared by every page
@@ -22,7 +24,12 @@ export default function App() {
   }, [location.pathname, location.hash, navigate]);
 
   useEffect(() => {
+    initAnalytics(GA_ID);
+  }, []);
+
+  useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    trackPageView(location.pathname, routeForPath(location.pathname)?.title ?? document.title);
   }, [location.pathname]);
 
   return (

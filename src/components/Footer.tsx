@@ -3,6 +3,7 @@ import { ArrowUp, Phone, Mail, MapPin, Facebook, Instagram, Linkedin } from 'luc
 import { Link } from 'react-router';
 import { Logo } from './Logo';
 import { pathFor } from '../routes';
+import { trackEvent } from '../lib/analytics';
 import { COMPANY_DETAILS, SERVICES_DATA } from '../data/websiteData';
 
 export const Footer: React.FC = () => {
@@ -152,6 +153,7 @@ export const Footer: React.FC = () => {
                 <Phone className="w-4 h-4 text-blue-400 flex-shrink-0" />
                 <a
                   href={`tel:${COMPANY_DETAILS.phone.replace(/[^0-9+]/g, '')}`}
+                  onClick={() => trackEvent('contact_click', { method: 'phone' })}
                   className="hover:text-white transition-colors"
                 >
                   {COMPANY_DETAILS.phone}
@@ -161,6 +163,7 @@ export const Footer: React.FC = () => {
                 <Phone className="w-4 h-4 text-blue-400 flex-shrink-0" />
                 <a
                   href={`tel:${COMPANY_DETAILS.officePhone.replace(/[^0-9+]/g, '')}`}
+                  onClick={() => trackEvent('contact_click', { method: 'phone' })}
                   className="hover:text-white transition-colors"
                 >
                   {COMPANY_DETAILS.officePhone} <span className="text-slate-500">(Office)</span>
@@ -170,6 +173,7 @@ export const Footer: React.FC = () => {
                 <Mail className="w-4 h-4 text-blue-400 flex-shrink-0" />
                 <a
                   href={`mailto:${COMPANY_DETAILS.email}`}
+                  onClick={() => trackEvent('contact_click', { method: 'email' })}
                   className="hover:text-white transition-colors"
                 >
                   {COMPANY_DETAILS.email}

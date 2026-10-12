@@ -5,6 +5,7 @@ import { Send, CheckCircle2, AlertCircle, Loader2, Phone, Mail, MapPin, Clock, M
 import { COMPANY_DETAILS, SERVICES_DATA } from '../data/websiteData';
 import { EnquirySubmission } from '../types';
 import { WEB3FORMS_KEY } from '../config';
+import { trackEvent } from '../lib/analytics';
 import { buildMailtoUrl, buildWhatsAppUrl, enquirySubject, formatEnquiryText, submitEnquiry } from '../lib/enquiry';
 
 type SendState = 'idle' | 'sending' | 'sent' | 'failed';
@@ -75,6 +76,7 @@ export const EnquiryForm: React.FC = () => {
 
     // Until MEDIUM's Web3Forms key is configured, enquiries go out over WhatsApp instead
     if (!WEB3FORMS_KEY) {
+      trackEvent('whatsapp_click', { location: 'form' });
       window.open(whatsAppUrl, '_blank', 'noopener');
       return;
     }
@@ -82,6 +84,7 @@ export const EnquiryForm: React.FC = () => {
     setSendState('sending');
     const result = await submitEnquiry(formData, WEB3FORMS_KEY, window.location.href);
     setSendState(result.ok ? 'sent' : 'failed');
+    if (result.ok) trackEvent('generate_lead', { service: formData.service, event: formData.event ?? '' });
   };
 
   const handleReset = () => {
@@ -168,6 +171,7 @@ export const EnquiryForm: React.FC = () => {
                   </span>
                   <a
                     href={`tel:${COMPANY_DETAILS.phone.replace(/[^0-9+]/g, '')}`}
+                    onClick={() => trackEvent('contact_click', { method: 'phone' })}
                     className="text-xs font-bold text-white hover:text-blue-300 transition-colors block mt-1"
                   >
                     {COMPANY_DETAILS.phone}
@@ -188,6 +192,7 @@ export const EnquiryForm: React.FC = () => {
                   </span>
                   <a
                     href={`mailto:${COMPANY_DETAILS.email}`}
+                    onClick={() => trackEvent('contact_click', { method: 'email' })}
                     className="text-xs font-bold text-white hover:text-blue-300 transition-colors block mt-1"
                   >
                     {COMPANY_DETAILS.email}
@@ -445,6 +450,7 @@ export const EnquiryForm: React.FC = () => {
                         <div className="flex flex-col sm:flex-row gap-2">
                           <a
                             href={whatsAppUrl}
+                            onClick={() => trackEvent('whatsapp_click', { location: 'fallback' })}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-semibold text-white bg-[#1faa53] hover:bg-[#25D366] transition-colors"

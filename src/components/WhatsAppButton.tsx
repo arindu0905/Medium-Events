@@ -3,16 +3,13 @@ import { useLocation } from 'react-router';
 import { COMPANY_DETAILS } from '../data/websiteData';
 import { buildWhatsAppUrl } from '../lib/enquiry';
 import { pathFor } from '../routes';
+import { trackEvent } from '../lib/analytics';
 
 const GREETING = "Hi MEDIUM, I'm interested in your events and services.";
 
-interface WhatsAppButtonProps {
-  onClick?: () => void;
-}
-
 // Floating chat shortcut. Not shown on the contact page, where it would cover the
 // full-width submit button and the form already offers WhatsApp.
-export const WhatsAppButton: React.FC<WhatsAppButtonProps> = ({ onClick }) => {
+export const WhatsAppButton: React.FC = () => {
   const onContactPage = useLocation().pathname === pathFor('contact');
   if (onContactPage) return null;
 
@@ -21,7 +18,7 @@ export const WhatsAppButton: React.FC<WhatsAppButtonProps> = ({ onClick }) => {
       href={buildWhatsAppUrl(COMPANY_DETAILS.whatsapp, GREETING)}
       target="_blank"
       rel="noopener noreferrer"
-      onClick={onClick}
+      onClick={() => trackEvent('whatsapp_click', { location: 'floating' })}
       aria-label="Chat with MEDIUM on WhatsApp"
       title="Chat with MEDIUM on WhatsApp"
       className="fixed right-5 bottom-5 z-40 w-14 h-14 rounded-full bg-[#25D366] hover:bg-[#1faa53] text-white shadow-lg shadow-black/40 flex items-center justify-center transition-all duration-200 hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"

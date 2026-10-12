@@ -2,6 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { EnquiryForm } from './EnquiryForm';
+import { trackEvent } from '../lib/analytics';
+
+vi.mock('../lib/analytics', () => ({ trackEvent: vi.fn() }));
 
 const mockConfig = vi.hoisted(() => ({ key: undefined as string | undefined }));
 vi.mock('../config', async (importOriginal) => ({
@@ -30,6 +33,7 @@ function fillRequired() {
 
 beforeEach(() => {
   mockConfig.key = undefined;
+  vi.mocked(trackEvent).mockClear();
 });
 
 afterEach(() => {
@@ -78,6 +82,7 @@ describe('EnquiryForm with a Web3Forms key', () => {
     fireEvent.click(screen.getByRole('button', { name: /Send Enquiry/ }));
     expect(await screen.findByText('Thanks, Aisha. MEDIUM will be in touch within 1 business day.')).toBeTruthy();
     expect(document.body.textContent).not.toMatch(/MED-\d{6}/);
+    expect(trackEvent).toHaveBeenCalledWith('generate_lead', { service: 'Events & Turnkey Management', event: '' });
   });
 
   it('keeps the typed enquiry and offers WhatsApp and email when sending fails', async () => {
@@ -92,6 +97,7 @@ describe('EnquiryForm with a Web3Forms key', () => {
     expect((screen.getByPlaceholderText(/Detail your event scope/) as HTMLTextAreaElement).value).toBe(
       'We would like a booth at Build Expo.',
     );
+    expect(trackEvent).not.toHaveBeenCalledWith('generate_lead', expect.anything());
   });
 });
 

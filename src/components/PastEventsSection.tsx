@@ -4,6 +4,7 @@ import { Link } from 'react-router';
 import { Calendar, MapPin, Users, Facebook, ArrowRight } from 'lucide-react';
 import { PAST_EVENTS_DATA, COMPANY_DETAILS } from '../data/websiteData';
 import { pathFor } from '../routes';
+import { trackEvent } from '../lib/analytics';
 import { PastEvent } from '../types';
 
 type SeriesFilter = 'All' | PastEvent['series'];
@@ -217,6 +218,7 @@ const PastEventCard: React.FC<{ event: PastEvent; index: number }> = ({ event, i
         </span>
         <a
           href={event.facebookUrl}
+          onClick={() => trackEvent('facebook_event_click', { event_id: event.id })}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-300 hover:text-white transition-colors"
