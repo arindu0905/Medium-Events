@@ -1,29 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useSearchParams } from 'react-router';
-import { Send, CheckCircle2, AlertCircle, Loader2, Phone, Mail, MapPin, Clock } from 'lucide-react';
+import { Send, CheckCircle2, AlertCircle, Loader2, Phone, Mail, MapPin, Clock, MessageCircle } from 'lucide-react';
 import { COMPANY_DETAILS, SERVICES_DATA } from '../data/websiteData';
 import { EnquirySubmission } from '../types';
+import { WEB3FORMS_KEY } from '../config';
+import { buildMailtoUrl, buildWhatsAppUrl, enquirySubject, formatEnquiryText, submitEnquiry } from '../lib/enquiry';
+
+type SendState = 'idle' | 'sending' | 'sent' | 'failed';
+
+const EMPTY_FORM: EnquirySubmission = {
+  fullName: '',
+  company: '',
+  email: '',
+  phone: '',
+  service: 'Events & Turnkey Management',
+  timeline: 'Q3/Q4 2026',
+  budget: '',
+  message: '',
+};
 
 export const EnquiryForm: React.FC = () => {
   const [searchParams] = useSearchParams();
   const prefilledService = searchParams.get('service');
   const prefilledEvent = searchParams.get('event');
-  const [formData, setFormData] = useState<EnquirySubmission>({
-    fullName: '',
-    company: '',
-    email: '',
-    phone: '',
-    service: 'Events & Turnkey Management',
-    timeline: 'Q3/Q4 2026',
-    budget: '',
-    message: '',
-  });
-
+  const [formData, setFormData] = useState<EnquirySubmission>(EMPTY_FORM);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [referenceId, setReferenceId] = useState('');
+  const [sendState, setSendState] = useState<SendState>('idle');
+  const isSubmitting = sendState === 'sending';
 
   // Prefill from /contact?service= or ?event= (applied after mount so it matches the pre-rendered HTML)
   useEffect(() => {
@@ -40,6 +44,7 @@ export const EnquiryForm: React.FC = () => {
     if (prefilledEvent) {
       setFormData((prev) => ({
         ...prev,
+        event: prefilledEvent,
         service: 'Flagship Expo Sponsorship / Booth',
         message: prev.message || `Inquiry regarding sponsorship / exhibition participation for: ${prefilledEvent}.`,
       }));
@@ -68,30 +73,29 @@ export const EnquiryForm: React.FC = () => {
     e.preventDefault();
     if (!validate()) return;
 
-    setIsSubmitting(true);
+    // Until MEDIUM's Web3Forms key is configured, enquiries go out over WhatsApp instead
+    if (!WEB3FORMS_KEY) {
+      window.open(whatsAppUrl, '_blank', 'noopener');
+      return;
+    }
 
-    // Simulate reliable dispatch with state feedback
-    await new Promise((resolve) => setTimeout(resolve, 900));
-
-    const ref = `MED-${Math.floor(100000 + Math.random() * 900000)}`;
-    setReferenceId(ref);
-    setIsSubmitting(false);
-    setIsSubmitted(true);
+    setSendState('sending');
+    const result = await submitEnquiry(formData, WEB3FORMS_KEY, window.location.href);
+    setSendState(result.ok ? 'sent' : 'failed');
   };
 
   const handleReset = () => {
-    setFormData({
-      fullName: '',
-      company: '',
-      email: '',
-      phone: '',
-      service: 'Events & Turnkey Management',
-      timeline: 'Q3/Q4 2026',
-      budget: '',
-      message: '',
-    });
+    setFormData(EMPTY_FORM);
     setErrors({});
-    setIsSubmitted(false);
+    setSendState('idle');
+  };
+
+  // Pre-filled fallbacks so a lead is never lost when the form can't be delivered
+  const enquiryText = formatEnquiryText(formData);
+  const whatsAppUrl = buildWhatsAppUrl(COMPANY_DETAILS.whatsapp, enquiryText);
+  const mailtoUrl = buildMailtoUrl(COMPANY_DETAILS.inquiryEmail, enquirySubject(formData), enquiryText);
+  const requireValid = (e: React.MouseEvent) => {
+    if (!validate()) e.preventDefault();
   };
 
   return (
@@ -217,7 +221,7 @@ export const EnquiryForm: React.FC = () => {
           <div className="lg:col-span-7">
             <div className="glass-panel rounded-2xl p-6 sm:p-10 border border-white/10 shadow-2xl relative">
               <AnimatePresence mode="wait">
-                {isSubmitted ? (
+                {sendState === 'sent' ? (
                   <motion.div
                     key="submitted"
                     initial={{ opacity: 0, scale: 0.95 }}
@@ -231,14 +235,11 @@ export const EnquiryForm: React.FC = () => {
                     </div>
 
                     <div>
-                      <span className="inline-block px-3 py-1 rounded bg-[#091129] border border-blue-500/30 text-xs font-mono text-blue-300 font-semibold mb-2">
-                        Ref #{referenceId}
-                      </span>
                       <h3 className="text-2xl font-extrabold text-white">
-                        Enquiry Received Successfully
+                        Enquiry Sent
                       </h3>
                       <p className="text-sm text-slate-300 max-w-md mx-auto mt-2 leading-relaxed">
-                        Thank you, <strong className="text-white">{formData.fullName}</strong>. Your project brief has been routed to MEDIUM Operations ({COMPANY_DETAILS.email}). A dedicated director will review your specifications and contact you shortly.
+                        Thanks, {formData.fullName}. MEDIUM will be in touch within 1 business day.
                       </p>
                     </div>
 
@@ -267,6 +268,11 @@ export const EnquiryForm: React.FC = () => {
                     className="space-y-5"
                     noValidate
                   >
+                    {/* Honeypot: hidden from people, bots fill it in and Web3Forms discards the submission */}
+                    <div aria-hidden="true" className="hidden">
+                      <input type="checkbox" name="botcheck" tabIndex={-1} autoComplete="off" />
+                    </div>
+
                     <div className="border-b border-white/08 pb-4">
                       <h3 className="text-xl font-bold text-white">
                         Official Project & Event Enquiry Form
@@ -430,6 +436,33 @@ export const EnquiryForm: React.FC = () => {
                       )}
                     </div>
 
+                    {sendState === 'failed' && (
+                      <div role="alert" className="p-4 rounded-xl bg-red-950/40 border border-red-500/40 text-xs text-red-200 space-y-3">
+                        <p className="flex items-start gap-2">
+                          <AlertCircle className="w-4 h-4 flex-shrink-0 mt-px text-red-400" />
+                          <span>We couldn't send your enquiry just now. Your details are still here — send them another way:</span>
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <a
+                            href={whatsAppUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-semibold text-white bg-[#1faa53] hover:bg-[#25D366] transition-colors"
+                          >
+                            <MessageCircle className="w-4 h-4" />
+                            <span>Send on WhatsApp instead</span>
+                          </a>
+                          <a
+                            href={mailtoUrl}
+                            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-semibold text-slate-100 bg-slate-900 hover:bg-slate-800 border border-white/10 transition-colors"
+                          >
+                            <Mail className="w-4 h-4" />
+                            <span>Send by email instead</span>
+                          </a>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Submit Button */}
                     <div className="pt-2">
                       <motion.button
@@ -442,15 +475,30 @@ export const EnquiryForm: React.FC = () => {
                         {isSubmitting ? (
                           <>
                             <Loader2 className="w-4 h-4 animate-spin" />
-                            <span>Transmitting Brief to Operations...</span>
+                            <span>Sending Enquiry...</span>
+                          </>
+                        ) : WEB3FORMS_KEY ? (
+                          <>
+                            <Send className="w-4 h-4" />
+                            <span>Send Enquiry to MEDIUM</span>
                           </>
                         ) : (
                           <>
-                            <Send className="w-4 h-4" />
-                            <span>Submit Enquiry to MEDIUM Operations</span>
+                            <MessageCircle className="w-4 h-4" />
+                            <span>Send via WhatsApp</span>
                           </>
                         )}
                       </motion.button>
+                      {!WEB3FORMS_KEY && (
+                        <a
+                          href={mailtoUrl}
+                          onClick={requireValid}
+                          className="mt-3 flex items-center justify-center gap-2 text-xs font-semibold text-blue-300 hover:text-white transition-colors"
+                        >
+                          <Mail className="w-3.5 h-3.5" />
+                          <span>Send by email instead</span>
+                        </a>
+                      )}
                       <p className="text-center text-[11px] text-slate-400 mt-2.5">
                         All project communications are held in strict commercial confidence.
                       </p>

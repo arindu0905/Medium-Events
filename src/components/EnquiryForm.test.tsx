@@ -1,0 +1,114 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router';
+import { EnquiryForm } from './EnquiryForm';
+
+const mockConfig = vi.hoisted(() => ({ key: undefined as string | undefined }));
+vi.mock('../config', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../config')>()),
+  get WEB3FORMS_KEY() {
+    return mockConfig.key;
+  },
+}));
+
+function renderForm(url = '/contact') {
+  return render(
+    <MemoryRouter initialEntries={[url]}>
+      <EnquiryForm />
+    </MemoryRouter>,
+  );
+}
+
+function fillRequired() {
+  fireEvent.change(screen.getByPlaceholderText('e.g. Ibrahim Rasheed'), { target: { value: 'Aisha' } });
+  fireEvent.change(screen.getByPlaceholderText('name@organization.mv'), { target: { value: 'aisha@co.mv' } });
+  fireEvent.change(screen.getByPlaceholderText('+960 770-0000'), { target: { value: '7771234' } });
+  fireEvent.change(screen.getByPlaceholderText(/Detail your event scope/), {
+    target: { value: 'We would like a booth at Build Expo.' },
+  });
+}
+
+beforeEach(() => {
+  mockConfig.key = undefined;
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
+describe('EnquiryForm without a Web3Forms key', () => {
+  it('offers WhatsApp as the primary action and email as the secondary one', () => {
+    renderForm();
+    fillRequired();
+    expect(screen.getByRole('button', { name: /Send via WhatsApp/ })).toBeTruthy();
+    const email = screen.getByRole('link', { name: /Send by email/ });
+    expect(email.getAttribute('href')).toMatch(/^mailto:info@medium\.mv\?subject=New%20enquiry/);
+    expect(decodeURIComponent(email.getAttribute('href')!)).toContain('We would like a booth at Build Expo.');
+  });
+
+  it('opens WhatsApp with the enquiry after validation', () => {
+    const open = vi.fn();
+    vi.stubGlobal('open', open);
+    renderForm();
+    fillRequired();
+    fireEvent.click(screen.getByRole('button', { name: /Send via WhatsApp/ }));
+    expect(open).toHaveBeenCalledTimes(1);
+    expect(open.mock.calls[0][0]).toMatch(/^https:\/\/wa\.me\/9607997974\?text=/);
+  });
+
+  it('does not open WhatsApp when required fields are missing', () => {
+    const open = vi.fn();
+    vi.stubGlobal('open', open);
+    renderForm();
+    fireEvent.click(screen.getByRole('button', { name: /Send via WhatsApp/ }));
+    expect(open).not.toHaveBeenCalled();
+    expect(screen.getByText('Please enter your full name.')).toBeTruthy();
+  });
+});
+
+describe('EnquiryForm with a Web3Forms key', () => {
+  beforeEach(() => {
+    mockConfig.key = 'TEST-KEY';
+  });
+
+  it('shows an honest confirmation after a successful send', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ success: true }))));
+    renderForm();
+    fillRequired();
+    fireEvent.click(screen.getByRole('button', { name: /Send Enquiry/ }));
+    expect(await screen.findByText('Thanks, Aisha. MEDIUM will be in touch within 1 business day.')).toBeTruthy();
+    expect(document.body.textContent).not.toMatch(/MED-\d{6}/);
+  });
+
+  it('keeps the typed enquiry and offers WhatsApp and email when sending fails', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
+    renderForm();
+    fillRequired();
+    fireEvent.click(screen.getByRole('button', { name: /Send Enquiry/ }));
+
+    const whatsapp = await screen.findByRole('link', { name: /Send on WhatsApp instead/ });
+    expect(whatsapp.getAttribute('href')).toMatch(/^https:\/\/wa\.me\/9607997974\?text=/);
+    expect(screen.getByRole('link', { name: /Send by email instead/ }).getAttribute('href')).toMatch(/^mailto:info@medium\.mv/);
+    expect((screen.getByPlaceholderText(/Detail your event scope/) as HTMLTextAreaElement).value).toBe(
+      'We would like a booth at Build Expo.',
+    );
+  });
+});
+
+describe('EnquiryForm prefill and spam protection', () => {
+  it('selects sponsorship and names the event from the URL', async () => {
+    renderForm('/contact?event=Aviation%20Forum%20%E2%80%93%20Connecting%20Maldives%20(AF)');
+    const select = screen.getAllByRole('combobox')[0] as HTMLSelectElement;
+    expect(select.value).toBe('Flagship Expo Sponsorship / Booth');
+    const message = screen.getByPlaceholderText(/Detail your event scope/) as HTMLTextAreaElement;
+    expect(message.value).toContain('Aviation Forum – Connecting Maldives (AF)');
+  });
+
+  it('has a hidden botcheck honeypot that people cannot tab into', () => {
+    const { container } = renderForm();
+    const honeypot = container.querySelector('input[name="botcheck"]') as HTMLInputElement;
+    expect(honeypot).toBeTruthy();
+    expect(honeypot.tabIndex).toBe(-1);
+    expect(honeypot.closest('[aria-hidden="true"]')).toBeTruthy();
+  });
+});
