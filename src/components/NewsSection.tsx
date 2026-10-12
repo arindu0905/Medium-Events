@@ -5,11 +5,7 @@ import { NEWS_ARTICLES_DATA } from '../data/websiteData';
 import { NewsArticle } from '../types';
 import { NewsModal } from './NewsModal';
 
-interface NewsSectionProps {
-  onEnquire: () => void;
-}
-
-export const NewsSection: React.FC<NewsSectionProps> = ({ onEnquire }) => {
+export const NewsSection: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'All' | 'Expos & Forums' | 'Company News' | 'Press Releases'>('All');
   const [selectedArticle, setSelectedArticle] = useState<NewsArticle | null>(null);
 
@@ -146,7 +142,6 @@ export const NewsSection: React.FC<NewsSectionProps> = ({ onEnquire }) => {
       <NewsModal
         article={selectedArticle}
         onClose={() => setSelectedArticle(null)}
-        onEnquire={onEnquire}
       />
     </section>
   );

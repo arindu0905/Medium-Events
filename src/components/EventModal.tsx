@@ -1,15 +1,18 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useNavigate } from 'react-router';
+import { contactPath } from '../routes';
 import { X, Calendar, MapPin, Users, Award, CheckCircle2, ArrowRight } from 'lucide-react';
 import { FlagshipEvent } from '../types';
 
 interface EventModalProps {
   event: FlagshipEvent | null;
   onClose: () => void;
-  onEnquire: (eventTitle: string) => void;
 }
 
-export const EventModal: React.FC<EventModalProps> = ({ event, onClose, onEnquire }) => {
+export const EventModal: React.FC<EventModalProps> = ({ event, onClose }) => {
+  const navigate = useNavigate();
+
   if (!event) return null;
 
   return (
@@ -161,7 +164,7 @@ export const EventModal: React.FC<EventModalProps> = ({ event, onClose, onEnquir
               <button
                 onClick={() => {
                   onClose();
-                  onEnquire(event.name);
+                  navigate(contactPath({ event: event.name }));
                 }}
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2 text-xs font-semibold uppercase tracking-wider text-white bg-[#12229D] hover:bg-[#1a38c9] rounded-lg transition-colors cursor-pointer shadow-sm border border-blue-400/30"
               >

@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useSearchParams } from 'react-router';
 import { Send, CheckCircle2, AlertCircle, Loader2, Phone, Mail, MapPin, Clock } from 'lucide-react';
 import { COMPANY_DETAILS, SERVICES_DATA } from '../data/websiteData';
 import { EnquirySubmission } from '../types';
 
-interface EnquiryFormProps {
-  prefilledService?: string;
-  prefilledEvent?: string;
-}
-
-export const EnquiryForm: React.FC<EnquiryFormProps> = ({ prefilledService, prefilledEvent }) => {
+export const EnquiryForm: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const prefilledService = searchParams.get('service');
+  const prefilledEvent = searchParams.get('event');
   const [formData, setFormData] = useState<EnquirySubmission>({
     fullName: '',
     company: '',
@@ -26,7 +25,7 @@ export const EnquiryForm: React.FC<EnquiryFormProps> = ({ prefilledService, pref
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [referenceId, setReferenceId] = useState('');
 
-  // Handle prefilled service or event
+  // Prefill from /contact?service= or ?event= (applied after mount so it matches the pre-rendered HTML)
   useEffect(() => {
     if (prefilledService) {
       const match = SERVICES_DATA.find((s) => s.id === prefilledService);
@@ -41,7 +40,7 @@ export const EnquiryForm: React.FC<EnquiryFormProps> = ({ prefilledService, pref
     if (prefilledEvent) {
       setFormData((prev) => ({
         ...prev,
-        service: 'Events & Turnkey Management',
+        service: 'Flagship Expo Sponsorship / Booth',
         message: prev.message || `Inquiry regarding sponsorship / exhibition participation for: ${prefilledEvent}.`,
       }));
     }

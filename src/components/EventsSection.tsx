@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
+import { Link } from 'react-router';
+import { contactPath } from '../routes';
 import { Calendar, MapPin, ArrowRight, ExternalLink } from 'lucide-react';
 import { FLAGSHIP_EVENTS_DATA } from '../data/websiteData';
 import { FlagshipEvent } from '../types';
 import { EventModal } from './EventModal';
 
-interface EventsSectionProps {
-  onEnquireEvent: (eventTitle: string) => void;
-}
-
-export const EventsSection: React.FC<EventsSectionProps> = ({ onEnquireEvent }) => {
+export const EventsSection: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState<'All' | 'Expos' | 'Forums' | 'Conferences'>('All');
   const [selectedEvent, setSelectedEvent] = useState<FlagshipEvent | null>(null);
 
@@ -146,13 +144,13 @@ export const EventsSection: React.FC<EventsSectionProps> = ({ onEnquireEvent }) 
                     <ExternalLink className="w-3.5 h-3.5" />
                   </button>
 
-                  <button
-                    onClick={() => onEnquireEvent(event.name)}
+                  <Link
+                    to={contactPath({ event: event.name })}
                     className="inline-flex items-center gap-1 text-xs font-semibold text-blue-300 hover:text-white transition-colors cursor-pointer"
                   >
                     <span>Sponsorship</span>
                     <ArrowRight className="w-3 h-3" />
-                  </button>
+                  </Link>
                 </div>
               </div>
             </motion.div>
@@ -164,7 +162,6 @@ export const EventsSection: React.FC<EventsSectionProps> = ({ onEnquireEvent }) 
       <EventModal
         event={selectedEvent}
         onClose={() => setSelectedEvent(null)}
-        onEnquire={onEnquireEvent}
       />
     </section>
   );

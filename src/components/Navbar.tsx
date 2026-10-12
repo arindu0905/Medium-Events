@@ -1,26 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { Link, useLocation } from 'react-router';
 import { Menu, X, ArrowUpRight, Phone, Mail } from 'lucide-react';
 import { Logo } from './Logo';
 import { COMPANY_DETAILS } from '../data/websiteData';
+import { ROUTES, pathFor, routeForPath } from '../routes';
 
-interface NavbarProps {
-  activeSection: string;
-  onNavigate: (sectionId: string) => void;
-}
+const MotionLink = motion.create(Link);
 
-const NAV_ITEMS = [
-  { id: 'home', label: 'Home' },
-  { id: 'services', label: 'Services' },
-  { id: 'events', label: 'Flagship Events' },
-  { id: 'about', label: 'About & Credibility' },
-  { id: 'info-center', label: 'Info Center' },
-  { id: 'enquiry', label: 'Enquiry' },
-];
-
-export const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavigate }) => {
+export const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const activeSection = routeForPath(useLocation().pathname)?.id ?? 'home';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -30,10 +21,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavigate }) => 
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleNavClick = (id: string) => {
-    onNavigate(id);
-    setMobileMenuOpen(false);
-  };
+  const closeMenu = () => setMobileMenuOpen(false);
 
   return (
     <header
@@ -46,29 +34,32 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavigate }) => 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           {/* Logo link: 3rd image mark + 4th image transparent wordmark */}
-          <button
-            onClick={() => handleNavClick('home')}
+          <Link
+            to="/"
+            onClick={closeMenu}
             className="flex items-center text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 rounded-lg p-1 -ml-1 transition-opacity hover:opacity-95 cursor-pointer"
             aria-label="MEDIUM EVENTS Home"
           >
             <Logo variant="full" />
-          </button>
+          </Link>
 
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
-            {NAV_ITEMS.map((item) => {
+            {ROUTES.map((item) => {
               const isActive = activeSection === item.id;
               return (
-                <button
+                <Link
                   key={item.id}
-                  onClick={() => handleNavClick(item.id)}
+                  to={item.path}
+                  onClick={closeMenu}
+                  aria-current={isActive ? 'page' : undefined}
                   className={`relative px-3.5 py-2 text-sm font-medium transition-colors duration-200 cursor-pointer rounded-md ${
                     isActive
                       ? 'text-white font-semibold'
                       : 'text-slate-300 hover:text-white'
                   }`}
                 >
-                  <span className="relative z-10">{item.label}</span>
+                  <span className="relative z-10">{item.navLabel}</span>
 
                   {/* Active Indicator Line in Royal/Electric Blue */}
                   {isActive && (
@@ -81,7 +72,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavigate }) => 
 
                   {/* Hover micro-interaction */}
                   <span className="absolute inset-0 rounded-md bg-white/0 hover:bg-white/[0.05] transition-colors pointer-events-none" />
-                </button>
+                </Link>
               );
             })}
           </nav>
@@ -97,15 +88,15 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavigate }) => 
               <span>{COMPANY_DETAILS.phone}</span>
             </a>
 
-            <motion.button
+            <MotionLink
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
-              onClick={() => handleNavClick('enquiry')}
+              to={pathFor('contact')}
               className="relative inline-flex items-center gap-1.5 px-4.5 py-2 text-xs font-semibold uppercase tracking-wider text-white bg-[#12229D] hover:bg-[#1a38c9] rounded-lg shadow-sm shadow-blue-950/60 transition-all duration-200 cursor-pointer border border-blue-400/30"
             >
               <span>Get in Touch</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
-            </motion.button>
+            </MotionLink>
           </div>
 
           {/* Mobile Menu Button */}
@@ -134,24 +125,26 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavigate }) => 
             className="md:hidden glass-panel border-t border-white/10 overflow-hidden mt-3 shadow-2xl"
           >
             <div className="px-5 pt-3 pb-6 space-y-2">
-              {NAV_ITEMS.map((item, idx) => {
+              {ROUTES.map((item, idx) => {
                 const isActive = activeSection === item.id;
                 return (
-                  <motion.button
+                  <MotionLink
                     key={item.id}
                     initial={{ opacity: 0, x: -12 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: idx * 0.04, duration: 0.2 }}
-                    onClick={() => handleNavClick(item.id)}
+                    to={item.path}
+                    onClick={closeMenu}
+                    aria-current={isActive ? 'page' : undefined}
                     className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-left text-sm font-medium transition-colors ${
                       isActive
                         ? 'bg-blue-950/70 text-blue-300 border border-blue-700/50'
                         : 'text-slate-300 hover:bg-white/[0.04] hover:text-white'
                     }`}
                   >
-                    <span>{item.label}</span>
+                    <span>{item.navLabel}</span>
                     {isActive && <span className="w-2 h-2 rounded-full bg-blue-400" />}
-                  </motion.button>
+                  </MotionLink>
                 );
               })}
 
@@ -170,12 +163,13 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection, onNavigate }) => 
                   <Mail className="w-4 h-4 text-blue-400" />
                   <span>{COMPANY_DETAILS.email}</span>
                 </a>
-                <button
-                  onClick={() => handleNavClick('enquiry')}
-                  className="w-full mt-2 py-2.5 px-4 text-center text-xs font-semibold uppercase tracking-wider text-white bg-[#12229D] hover:bg-[#1a38c9] rounded-lg shadow-sm transition-colors cursor-pointer"
+                <Link
+                  to={pathFor('contact')}
+                  onClick={closeMenu}
+                  className="block w-full mt-2 py-2.5 px-4 text-center text-xs font-semibold uppercase tracking-wider text-white bg-[#12229D] hover:bg-[#1a38c9] rounded-lg shadow-sm transition-colors cursor-pointer"
                 >
                   Submit Project Enquiry
-                </button>
+                </Link>
               </div>
             </div>
           </motion.div>

@@ -1,13 +1,11 @@
 import React from 'react';
 import { ArrowUp, Phone, Mail, MapPin, Facebook, Instagram, Linkedin } from 'lucide-react';
+import { Link } from 'react-router';
 import { Logo } from './Logo';
+import { pathFor } from '../routes';
 import { COMPANY_DETAILS, SERVICES_DATA } from '../data/websiteData';
 
-interface FooterProps {
-  onNavigate: (sectionId: string) => void;
-}
-
-export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
+export const Footer: React.FC = () => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -71,52 +69,52 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             </p>
             <ul className="space-y-2 text-xs">
               <li>
-                <button
-                  onClick={() => onNavigate('home')}
+                <Link
+                  to={pathFor('home')}
                   className="hover:text-blue-300 transition-colors cursor-pointer"
                 >
                   Home
-                </button>
+                </Link>
               </li>
               <li>
-                <button
-                  onClick={() => onNavigate('services')}
+                <Link
+                  to={pathFor('services')}
                   className="hover:text-blue-300 transition-colors cursor-pointer"
                 >
                   Services
-                </button>
+                </Link>
               </li>
               <li>
-                <button
-                  onClick={() => onNavigate('events')}
+                <Link
+                  to={pathFor('events')}
                   className="hover:text-blue-300 transition-colors cursor-pointer"
                 >
                   Flagship Events
-                </button>
+                </Link>
               </li>
               <li>
-                <button
-                  onClick={() => onNavigate('about')}
+                <Link
+                  to={pathFor('about')}
                   className="hover:text-blue-300 transition-colors cursor-pointer"
                 >
                   About & Pedigree
-                </button>
+                </Link>
               </li>
               <li>
-                <button
-                  onClick={() => onNavigate('info-center')}
+                <Link
+                  to={pathFor('news')}
                   className="hover:text-blue-300 transition-colors cursor-pointer"
                 >
                   Info Center & News
-                </button>
+                </Link>
               </li>
               <li>
-                <button
-                  onClick={() => onNavigate('enquiry')}
+                <Link
+                  to={pathFor('contact')}
                   className="hover:text-blue-300 transition-colors cursor-pointer"
                 >
                   Project Enquiry
-                </button>
+                </Link>
               </li>
             </ul>
           </div>
@@ -129,12 +127,12 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             <ul className="space-y-2 text-xs">
               {SERVICES_DATA.map((srv) => (
                 <li key={srv.id}>
-                  <button
-                    onClick={() => onNavigate('services')}
+                  <Link
+                    to={pathFor('services')}
                     className="hover:text-blue-300 transition-colors text-left cursor-pointer"
                   >
                     {srv.title}
-                  </button>
+                  </Link>
                 </li>
               ))}
             </ul>

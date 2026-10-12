@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
+import { Link } from 'react-router';
 import { Calendar, MapPin, Users, Facebook, ArrowRight } from 'lucide-react';
 import { PAST_EVENTS_DATA, COMPANY_DETAILS } from '../data/websiteData';
+import { pathFor } from '../routes';
 import { PastEvent } from '../types';
 
 type SeriesFilter = 'All' | PastEvent['series'];
@@ -17,10 +19,9 @@ const SERIES_FILTERS: SeriesFilter[] = [
 interface PastEventsSectionProps {
   // When set, shows only the most recent N events plus a "view all" link (used on Home)
   limit?: number;
-  onViewAll?: () => void;
 }
 
-export const PastEventsSection: React.FC<PastEventsSectionProps> = ({ limit, onViewAll }) => {
+export const PastEventsSection: React.FC<PastEventsSectionProps> = ({ limit }) => {
   const [activeSeries, setActiveSeries] = useState<SeriesFilter>('All');
 
   const sortedEvents = [...PAST_EVENTS_DATA].sort((a, b) => b.isoDate.localeCompare(a.isoDate));
@@ -144,14 +145,14 @@ export const PastEventsSection: React.FC<PastEventsSectionProps> = ({ limit, onV
 
         {/* Footer actions */}
         <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4">
-          {limit && onViewAll && (
-            <button
-              onClick={onViewAll}
+          {limit && (
+            <Link
+              to={pathFor('events')}
               className="inline-flex items-center gap-2 px-6 py-3 text-xs font-semibold uppercase tracking-wider text-white bg-[#12229D] hover:bg-[#1a38c9] rounded-lg transition-colors cursor-pointer border border-blue-400/30 shadow-md"
             >
               <span>View Full Track Record</span>
               <ArrowRight className="w-3.5 h-3.5" />
-            </button>
+            </Link>
           )}
           <a
             href={COMPANY_DETAILS.social.facebook}

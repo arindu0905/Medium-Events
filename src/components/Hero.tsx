@@ -1,12 +1,12 @@
 import React from 'react';
 import { motion } from 'motion/react';
+import { Link } from 'react-router';
+import { pathFor } from '../routes';
 import { ArrowRight, ChevronDown, Award, Anchor, Building2 } from 'lucide-react';
 
-interface HeroProps {
-  onNavigate: (sectionId: string) => void;
-}
+const MotionLink = motion.create(Link);
 
-export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
+export const Hero: React.FC = () => {
   return (
     <section id="home" className="relative min-h-[85vh] flex items-center justify-center pt-28 pb-16 overflow-hidden">
       {/* Background Cinematic Atmosphere */}
@@ -70,24 +70,24 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
           transition={{ duration: 0.55, delay: 0.28, ease: [0.16, 1, 0.3, 1] }}
           className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
         >
-          <motion.button
+          <MotionLink
             whileHover={{ scale: 1.03, y: -2 }}
             whileTap={{ scale: 0.97 }}
-            onClick={() => onNavigate('events')}
+            to={pathFor('events')}
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 text-sm font-semibold uppercase tracking-wider text-white bg-[#12229D] hover:bg-[#1a38c9] rounded-xl shadow-lg shadow-blue-950/60 transition-all cursor-pointer border border-blue-400/30"
           >
             <span>Explore Flagship Events</span>
             <ArrowRight className="w-4 h-4" />
-          </motion.button>
+          </MotionLink>
 
-          <motion.button
+          <MotionLink
             whileHover={{ scale: 1.03, y: -2 }}
             whileTap={{ scale: 0.97 }}
-            onClick={() => onNavigate('enquiry')}
+            to={pathFor('contact')}
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 text-sm font-semibold uppercase tracking-wider text-slate-200 hover:text-white bg-slate-900/80 hover:bg-slate-800/80 rounded-xl transition-all cursor-pointer border border-white/10 backdrop-blur-md"
           >
             <span>Submit Project Enquiry</span>
-          </motion.button>
+          </MotionLink>
         </motion.div>
 
         {/* Supporting Visual Elements: Quick Pillars */}
@@ -135,13 +135,13 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
           transition={{ delay: 0.7, duration: 0.6 }}
           className="mt-10 flex justify-center"
         >
-          <button
-            onClick={() => onNavigate('events')}
+          <Link
+            to={pathFor('events')}
             className="p-2 text-slate-400 hover:text-white transition-colors cursor-pointer animate-bounce"
             aria-label="Scroll down to exhibitions"
           >
             <ChevronDown className="w-5 h-5" />
-          </button>
+          </Link>
         </motion.div>
       </div>
     </section>

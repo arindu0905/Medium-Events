@@ -1,13 +1,11 @@
 import React from 'react';
 import { motion } from 'motion/react';
+import { Link } from 'react-router';
+import { contactPath } from '../routes';
 import { CalendarDays, TrendingUp, Palette, Compass, CheckCircle2, ArrowRight } from 'lucide-react';
 import { SERVICES_DATA } from '../data/websiteData';
 
-interface ServicesSectionProps {
-  onSelectService: (serviceId: string) => void;
-}
-
-export const ServicesSection: React.FC<ServicesSectionProps> = ({ onSelectService }) => {
+export const ServicesSection: React.FC = () => {
   const getIcon = (iconName: string) => {
     switch (iconName) {
       case 'CalendarDays':
@@ -119,13 +117,13 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({ onSelectServic
 
               {/* Action */}
               <div className="pt-4 border-t border-white/06 flex items-center justify-between">
-                <button
-                  onClick={() => onSelectService(service.id)}
+                <Link
+                  to={contactPath({ service: service.id })}
                   className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-blue-300 hover:text-white transition-colors cursor-pointer group-hover:translate-x-1 duration-200"
                 >
                   <span>Request Proposal for {service.title.split(' ')[0]}</span>
                   <ArrowRight className="w-3.5 h-3.5" />
-                </button>
+                </Link>
               </div>
             </motion.div>
           ))}

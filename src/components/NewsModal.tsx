@@ -1,15 +1,18 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useNavigate } from 'react-router';
+import { pathFor } from '../routes';
 import { X, Calendar, Clock, Tag, ArrowRight } from 'lucide-react';
 import { NewsArticle } from '../types';
 
 interface NewsModalProps {
   article: NewsArticle | null;
   onClose: () => void;
-  onEnquire: () => void;
 }
 
-export const NewsModal: React.FC<NewsModalProps> = ({ article, onClose, onEnquire }) => {
+export const NewsModal: React.FC<NewsModalProps> = ({ article, onClose }) => {
+  const navigate = useNavigate();
+
   if (!article) return null;
 
   return (
@@ -113,7 +116,7 @@ export const NewsModal: React.FC<NewsModalProps> = ({ article, onClose, onEnquir
               <button
                 onClick={() => {
                   onClose();
-                  onEnquire();
+                  navigate(pathFor('contact'));
                 }}
                 className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-white bg-[#12229D] hover:bg-[#1a38c9] rounded-lg cursor-pointer border border-blue-400/30"
               >
