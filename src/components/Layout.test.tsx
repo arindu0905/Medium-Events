@@ -72,4 +72,11 @@ describe('footer', () => {
     expect(within(footer).getByText(/\+960 799-7974/)).toBeTruthy();
     expect(footer.outerHTML).not.toMatch(/glass|gradient|blur/);
   });
+
+  it('links staff to the admin sign-in page without inviting crawlers', () => {
+    renderAt('/');
+    const link = within(screen.getByRole('contentinfo')).getByRole('link', { name: 'Staff login' });
+    expect(link.getAttribute('href')).toBe('http://localhost:3010/login');
+    expect(link.getAttribute('rel')).toContain('nofollow');
+  });
 });

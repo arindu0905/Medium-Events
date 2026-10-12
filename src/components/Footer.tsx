@@ -7,6 +7,7 @@ import { COMPANY_DETAILS, EVENT_SERIES } from '../data/websiteData';
 import { MAIN_ROUTES, seriesPath } from '../routes';
 import { buildWhatsAppUrl } from '../lib/enquiry';
 import { trackEvent } from '../lib/analytics';
+import { ADMIN_URL } from '../config';
 
 const telHref = (phone: string) => `tel:${phone.replace(/[^0-9+]/g, '')}`;
 
@@ -105,8 +106,11 @@ export const Footer: React.FC = () => (
     </Container>
 
     <div className="border-t border-white/10">
-      <Container className="py-6 text-xs">
-        © {new Date().getFullYear()} MEDIUM Events Pvt Ltd · Malé, Maldives
+      <Container className="py-6 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <span>© {new Date().getFullYear()} MEDIUM Events Pvt Ltd · Malé, Maldives</span>
+        <a href={`${ADMIN_URL}/login`} rel="nofollow" className={FOOTER_LINK}>
+          Staff login
+        </a>
       </Container>
     </div>
   </footer>

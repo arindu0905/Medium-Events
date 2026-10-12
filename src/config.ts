@@ -9,6 +9,12 @@ export function normalizeSiteUrl(raw: string | undefined): string {
 
 const optional = (value: string | undefined) => value?.trim() || undefined;
 
+// Staff admin app (separate deployment); the footer's Staff login link points here
+export function normalizeAdminUrl(raw: string | undefined): string {
+  return (optional(raw) ?? 'http://localhost:3010').replace(/\/+$/, '');
+}
+
 export const SITE_URL = normalizeSiteUrl(import.meta.env.VITE_SITE_URL);
 export const WEB3FORMS_KEY = optional(import.meta.env.VITE_WEB3FORMS_KEY);
 export const GA_ID = optional(import.meta.env.VITE_GA_ID);
+export const ADMIN_URL = normalizeAdminUrl(import.meta.env.VITE_ADMIN_URL);
