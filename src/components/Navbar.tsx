@@ -4,7 +4,7 @@ import { Link, useLocation } from 'react-router';
 import { Menu, X, ArrowUpRight, Phone, Mail } from 'lucide-react';
 import { Logo } from './Logo';
 import { COMPANY_DETAILS } from '../data/websiteData';
-import { ROUTES, pathFor, routeForPath } from '../routes';
+import { MAIN_ROUTES, pathFor, routeForPath } from '../routes';
 import { trackEvent } from '../lib/analytics';
 
 const MotionLink = motion.create(Link);
@@ -46,7 +46,7 @@ export const Navbar: React.FC = () => {
 
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
-            {ROUTES.map((item) => {
+            {MAIN_ROUTES.map((item) => {
               const isActive = activeSection === item.id;
               return (
                 <Link
@@ -127,7 +127,7 @@ export const Navbar: React.FC = () => {
             className="md:hidden glass-panel border-t border-white/10 overflow-hidden mt-3 shadow-2xl"
           >
             <div className="px-5 pt-3 pb-6 space-y-2">
-              {ROUTES.map((item, idx) => {
+              {MAIN_ROUTES.map((item, idx) => {
                 const isActive = activeSection === item.id;
                 return (
                   <MotionLink

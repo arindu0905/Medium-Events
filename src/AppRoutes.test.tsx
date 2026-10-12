@@ -49,7 +49,7 @@ describe('AppRoutes', () => {
   it('links navigation to real URLs', async () => {
     renderAt('/');
     const nav = await screen.findByRole('navigation');
-    expect(within(nav).getAllByRole('link', { name: 'Info Center' })[0].getAttribute('href')).toBe('/news');
+    expect(within(nav).getAllByRole('link', { name: 'News' })[0].getAttribute('href')).toBe('/news');
     expect(screen.getByRole('link', { name: 'Project Enquiry' }).getAttribute('href')).toBe('/contact');
   });
 
@@ -62,6 +62,6 @@ describe('AppRoutes', () => {
   it('reports page views under the canonical path', async () => {
     renderAt('/contact/');
     await screen.findAllByRole('heading');
-    expect(trackPageView).toHaveBeenCalledWith('/contact', 'Contact & Sponsorship Enquiries | MEDIUM Events Maldives');
+    expect(trackPageView).toHaveBeenCalledWith('/contact', 'Contact and sponsorship | MEDIUM Events Maldives');
   });
 });

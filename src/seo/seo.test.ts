@@ -69,6 +69,14 @@ describe('structured data', () => {
     expect(evs[0].location).toMatchObject({ '@type': 'Place', name: PAST_EVENTS_DATA[0].venue });
   });
 
+  it('adds only that series\' editions on a series page', () => {
+    const cif = ROUTES.find((r) => r.seriesSlug === 'construction-industry-forum')!;
+    const data = jsonLdForRoute(cif, 'https://medium.mv') as Record<string, any>[];
+    expect(data).toHaveLength(4);
+    expect(data[0]['@type']).toBe('Organization');
+    for (const event of data.slice(1)) expect(event.name).toContain('Construction Industry Forum');
+  });
+
   it('adds events only on the events page', () => {
     expect(jsonLdForRoute(ROUTES[0], 'https://medium.mv')).toHaveLength(1);
     expect(jsonLdForRoute(events, 'https://medium.mv')).toHaveLength(1 + PAST_EVENTS_DATA.length);

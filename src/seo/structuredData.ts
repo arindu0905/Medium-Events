@@ -1,5 +1,6 @@
 import { normalizeSiteUrl } from '../config';
-import { COMPANY_DETAILS, PAST_EVENTS_DATA } from '../data/websiteData';
+import { COMPANY_DETAILS, PAST_EVENTS_DATA, editionsFor, seriesBySlug } from '../data/websiteData';
+import type { PastEvent } from '../types';
 import type { RouteMeta } from '../routes';
 
 // schema.org JSON-LD so Google can show MEDIUM's business details and events in search
@@ -24,9 +25,9 @@ export function organizationJsonLd(siteUrl: string): object {
   };
 }
 
-export function pastEventsJsonLd(siteUrl: string): object[] {
+export function pastEventsJsonLd(siteUrl: string, events: PastEvent[] = PAST_EVENTS_DATA): object[] {
   const base = normalizeSiteUrl(siteUrl);
-  return PAST_EVENTS_DATA.map((event) => ({
+  return events.map((event) => ({
     '@context': 'https://schema.org',
     '@type': 'Event',
     name: event.name,
@@ -46,5 +47,8 @@ export function pastEventsJsonLd(siteUrl: string): object[] {
 
 export function jsonLdForRoute(route: RouteMeta, siteUrl: string): object[] {
   const org = organizationJsonLd(siteUrl);
-  return route.id === 'events' ? [org, ...pastEventsJsonLd(siteUrl)] : [org];
+  if (route.id === 'events') return [org, ...pastEventsJsonLd(siteUrl)];
+  const series = route.seriesSlug ? seriesBySlug(route.seriesSlug) : undefined;
+  if (series) return [org, ...pastEventsJsonLd(siteUrl, editionsFor(series.series))];
+  return [org];
 }
