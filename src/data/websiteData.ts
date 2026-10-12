@@ -12,6 +12,7 @@ export const COMPANY_DETAILS = {
   phone: '+960 770-1090',
   secondaryPhone: '+960 799-7974',
   officePhone: '+960 333-0020',
+  whatsapp: '+960 799-7974',
   email: 'Operations@medium.mv',
   inquiryEmail: 'info@medium.mv',
   social: {

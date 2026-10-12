@@ -60,4 +60,5 @@ export interface EnquirySubmission {
   timeline: string;
   budget?: string;
   message: string;
+  event?: string;
 }
