@@ -6,6 +6,7 @@ import { createFakeSupabase, makeProfile, type QueryCall } from '../test/fakeSup
 
 const holder = vi.hoisted(() => ({ fake: null as unknown as ReturnType<typeof createFakeSupabase> }));
 vi.mock('../lib/supabase', () => ({
+  DEMO_MODE: false,
   get supabase() {
     return holder.fake.client;
   },

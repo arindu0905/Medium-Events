@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Navigate } from 'react-router';
 import { useAuth } from '../lib/auth';
-import { supabase } from '../lib/supabase';
+import { DEMO_MODE, supabase } from '../lib/supabase';
 
 const FIELD =
   'w-full rounded-md border border-line bg-white px-3.5 py-2.5 text-base text-ink focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand';
@@ -37,6 +37,13 @@ export default function LoginPage() {
       <div className="w-full max-w-sm rounded-lg border border-line bg-white p-8">
         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand">MEDIUM Events</p>
         <h1 className="mt-2 text-2xl font-bold text-ink">{resetMode ? 'Reset your password' : 'Sign in to MEDIUM Admin'}</h1>
+
+        {DEMO_MODE && (
+          <div role="note" className="mt-4 rounded-md border border-brand/30 bg-brand-tint px-3 py-2 text-sm text-ink">
+            <p className="font-semibold">Demo mode (local only, nothing is saved)</p>
+            <p className="mt-1">Sign in as <code>admin@demo.medium</code>, <code>sales@demo.medium</code>, <code>events@demo.medium</code> or <code>finance@demo.medium</code> with password <code>medium-demo</code>.</p>
+          </div>
+        )}
 
         {notice && (
           <p role="alert" className="mt-4 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-800">

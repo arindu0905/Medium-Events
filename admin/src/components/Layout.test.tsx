@@ -8,6 +8,7 @@ import { canSee } from '../lib/permissions';
 
 const holder = vi.hoisted(() => ({ fake: null as unknown as ReturnType<typeof createFakeSupabase> }));
 vi.mock('../lib/supabase', () => ({
+  DEMO_MODE: false,
   get supabase() {
     return holder.fake.client;
   },

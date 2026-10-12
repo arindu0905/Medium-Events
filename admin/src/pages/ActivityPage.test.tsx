@@ -7,6 +7,7 @@ import type { ActivityRow, StaffRole } from '../lib/types';
 
 const holder = vi.hoisted(() => ({ fake: null as unknown as ReturnType<typeof createFakeSupabase> }));
 vi.mock('../lib/supabase', () => ({
+  DEMO_MODE: false,
   get supabase() {
     return holder.fake.client;
   },
@@ -74,7 +75,8 @@ describe('ActivityPage', () => {
 
   it('pages through long histories', async () => {
     renderAs('admin', 120);
-    fireEvent.click(await screen.findByRole('button', { name: 'Next page' }));
+    await screen.findByText('Page 1 of 3');
+    fireEvent.click(screen.getByRole('button', { name: 'Next page' }));
     await waitFor(() => expect(call(lastQuery(), 'range')).toEqual([[50, 99]]));
     expect(screen.getByText('Page 2 of 3')).toBeTruthy();
   });
