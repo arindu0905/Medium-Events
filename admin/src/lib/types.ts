@@ -16,6 +16,8 @@ export interface Profile {
   email: string;
   role: StaffRole;
   active: boolean;
+  // Set when an admin creates the account or resets the password; cleared once the user picks their own
+  must_change_password: boolean;
   created_at: string;
   updated_at: string | null;
 }

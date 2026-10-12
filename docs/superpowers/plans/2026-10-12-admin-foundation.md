@@ -10,6 +10,8 @@
 
 **Spec:** `docs/superpowers/specs/2026-10-12-admin-foundation-design.md`. Branch `feat/admin-foundation`. Paths are relative to `Medium--main/`.
 
+> **Amendment (2026-10-12):** see the spec's Amendment section. Task 2 creates the default admin with `scripts/create-default-admin.mjs` instead of `create-first-admin.mjs`; Task 3 builds `manage-staff` (create, reset_password) instead of `invite-staff`; Task 1 adds `must_change_password` and `clear_password_flag()` with tests (only own row; flag cleared; RPC can't touch others). Admin-app tasks 4 and 6 were updated accordingly.
+
 ## Global Constraints
 
 - Roles exactly: `admin`, `sales`, `events`, `finance` (enum `staff_role`).

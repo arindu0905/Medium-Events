@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { UserPlus } from 'lucide-react';
 import { useAuth } from '../lib/auth';
-import { inviteStaff, listStaff, updateStaff } from '../lib/staff';
-import { validateInvite } from '../../../supabase/functions/invite-staff/validate.ts';
+import { createStaff, listStaff, resetStaffPassword, updateStaff } from '../lib/staff';
+import { validateCreateStaff, validateResetPassword } from '../../../supabase/functions/manage-staff/validate.ts';
 import { ROLE_LABELS, type Profile, type StaffRole } from '../lib/types';
 
 const ROLES = Object.keys(ROLE_LABELS) as StaffRole[];
@@ -20,7 +20,8 @@ export default function StaffPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [message, setMessage] = useState<{ kind: 'error' | 'success'; text: string } | null>(null);
   const [confirming, setConfirming] = useState<Profile | null>(null);
-  const [inviteOpen, setInviteOpen] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
+  const [resetting, setResetting] = useState<Profile | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -51,21 +52,35 @@ export default function StaffPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink">Staff</h1>
-          <p className="mt-1 text-body">Invite people, set their role and switch off access when they leave.</p>
+          <p className="mt-1 text-body">Add people, set their role, reset passwords and switch off access when they leave.</p>
         </div>
-        <button type="button" onClick={() => setInviteOpen(true)} className={PRIMARY}>
+        <button type="button" onClick={() => setAddOpen(true)} className={PRIMARY}>
           <UserPlus className="w-4 h-4" aria-hidden="true" />
-          Invite staff
+          Add staff
         </button>
       </div>
 
-      {inviteOpen && (
-        <InviteForm
-          onClose={() => setInviteOpen(false)}
-          onSent={async (email) => {
-            setInviteOpen(false);
-            setMessage({ kind: 'success', text: `Invitation sent to ${email}.` });
+      {addOpen && (
+        <AddStaffForm
+          onClose={() => setAddOpen(false)}
+          onCreated={async (email) => {
+            setAddOpen(false);
+            setMessage({
+              kind: 'success',
+              text: `Account created for ${email}. Give them the temporary password; they'll choose their own when they first sign in.`,
+            });
             await load();
+          }}
+        />
+      )}
+
+      {resetting && (
+        <ResetPasswordForm
+          person={resetting}
+          onClose={() => setResetting(null)}
+          onDone={(name) => {
+            setResetting(null);
+            setMessage({ kind: 'success', text: `Temporary password set for ${name}. They must choose a new one when they sign in.` });
           }}
         />
       )}
@@ -154,7 +169,16 @@ export default function StaffPage() {
                         {person.active ? 'Active' : 'Deactivated'}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-4 py-3 text-right whitespace-nowrap space-x-2">
+                      <button
+                        type="button"
+                        disabled={isMe}
+                        title={isMe ? 'Change your own password from the password page' : undefined}
+                        onClick={() => setResetting(person)}
+                        className={SECONDARY}
+                      >
+                        Reset password
+                      </button>
                       {person.active ? (
                         <button
                           type="button"
@@ -182,39 +206,40 @@ export default function StaffPage() {
   );
 }
 
-function InviteForm({ onClose, onSent }: { onClose: () => void; onSent: (email: string) => void }) {
+function AddStaffForm({ onClose, onCreated }: { onClose: () => void; onCreated: (email: string) => void }) {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [role, setRole] = useState<StaffRole>('sales');
+  const [tempPassword, setTempPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     // Check instantly; the server checks the same rules again
-    const checked = validateInvite({ email, full_name: fullName, role });
+    const checked = validateCreateStaff({ email, full_name: fullName, role, temp_password: tempPassword });
     if (!checked.ok) return setError(checked.error);
     setBusy(true);
     setError(null);
-    const result = await inviteStaff({ email, full_name: fullName, role });
+    const result = await createStaff(checked.value);
     setBusy(false);
-    if (result.ok) onSent(email.trim().toLowerCase());
+    if (result.ok) onCreated(checked.value.email);
     else setError(result.error);
   };
 
   return (
-    <form onSubmit={submit} noValidate aria-label="Invite staff" className="mt-6 rounded-lg border border-line bg-white p-5 grid gap-4 sm:grid-cols-3">
+    <form onSubmit={submit} noValidate aria-label="Add staff" className="mt-6 rounded-lg border border-line bg-white p-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <div>
-        <label htmlFor="invite-name" className="block text-sm font-semibold text-ink mb-1.5">Full name</label>
-        <input id="invite-name" value={fullName} onChange={(e) => setFullName(e.target.value)} className={FIELD} />
+        <label htmlFor="new-name" className="block text-sm font-semibold text-ink mb-1.5">Full name</label>
+        <input id="new-name" value={fullName} onChange={(e) => setFullName(e.target.value)} className={FIELD} />
       </div>
       <div>
-        <label htmlFor="invite-email" className="block text-sm font-semibold text-ink mb-1.5">Email</label>
-        <input id="invite-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={FIELD} />
+        <label htmlFor="new-email" className="block text-sm font-semibold text-ink mb-1.5">Email</label>
+        <input id="new-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={FIELD} />
       </div>
       <div>
-        <label htmlFor="invite-role" className="block text-sm font-semibold text-ink mb-1.5">Role</label>
-        <select id="invite-role" value={role} onChange={(e) => setRole(e.target.value as StaffRole)} className={FIELD}>
+        <label htmlFor="new-role" className="block text-sm font-semibold text-ink mb-1.5">Role</label>
+        <select id="new-role" value={role} onChange={(e) => setRole(e.target.value as StaffRole)} className={FIELD}>
           {ROLES.map((r) => (
             <option key={r} value={r}>
               {ROLE_LABELS[r]}
@@ -222,14 +247,62 @@ function InviteForm({ onClose, onSent }: { onClose: () => void; onSent: (email: 
           ))}
         </select>
       </div>
+      <div>
+        <label htmlFor="new-password" className="block text-sm font-semibold text-ink mb-1.5">Temporary password</label>
+        <input id="new-password" type="text" autoComplete="off" value={tempPassword} onChange={(e) => setTempPassword(e.target.value)} className={FIELD} />
+      </div>
+      <p className="sm:col-span-2 lg:col-span-4 text-xs text-muted">
+        No email is sent. Give the person their temporary password directly; they'll choose their own when they first sign in.
+      </p>
       {error && (
-        <p role="alert" className="sm:col-span-3 text-sm text-red-700">
+        <p role="alert" className="sm:col-span-2 lg:col-span-4 text-sm text-red-700">
           {error}
         </p>
       )}
-      <div className="sm:col-span-3 flex gap-3">
+      <div className="sm:col-span-2 lg:col-span-4 flex gap-3">
         <button type="submit" disabled={busy} className={PRIMARY}>
-          Send invitation
+          Create account
+        </button>
+        <button type="button" onClick={onClose} className={SECONDARY}>
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function ResetPasswordForm({ person, onClose, onDone }: { person: Profile; onClose: () => void; onDone: (name: string) => void }) {
+  const [tempPassword, setTempPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const checked = validateResetPassword({ user_id: person.id, temp_password: tempPassword });
+    if (!checked.ok) return setError(checked.error);
+    setBusy(true);
+    setError(null);
+    const result = await resetStaffPassword(person.id, tempPassword);
+    setBusy(false);
+    if (result.ok) onDone(person.full_name);
+    else setError(result.error);
+  };
+
+  return (
+    <form onSubmit={submit} noValidate aria-label={`Reset password for ${person.full_name}`} className="mt-6 rounded-lg border border-line bg-white p-5 space-y-3">
+      <label htmlFor="reset-password" className="block text-sm font-semibold text-ink">
+        Temporary password for {person.full_name}
+      </label>
+      <input id="reset-password" type="text" autoComplete="off" value={tempPassword} onChange={(e) => setTempPassword(e.target.value)} className={`${FIELD} max-w-sm`} />
+      <p className="text-xs text-muted">Their current password stops working. They'll choose a new one when they sign in with this.</p>
+      {error && (
+        <p role="alert" className="text-sm text-red-700">
+          {error}
+        </p>
+      )}
+      <div className="flex gap-3">
+        <button type="submit" disabled={busy} className={PRIMARY}>
+          Set temporary password
         </button>
         <button type="button" onClick={onClose} className={SECONDARY}>
           Cancel

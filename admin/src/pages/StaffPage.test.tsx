@@ -51,43 +51,64 @@ describe('StaffPage', () => {
     expect(within(await rowFor('Sam Sales')).getByText('Active')).toBeTruthy();
   });
 
-  it('validates an invite before sending it', async () => {
-    fireEvent.click(await screen.findByRole('button', { name: 'Invite staff' }));
+  const openAddForm = async () => {
+    fireEvent.click(await screen.findByRole('button', { name: 'Add staff' }));
     fireEvent.change(screen.getByLabelText('Full name'), { target: { value: 'New Person' } });
-    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'not-an-email' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Send invitation' }));
-    expect(screen.getByText('Enter a valid email address.')).toBeTruthy();
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'New@Medium.mv' } });
+    fireEvent.change(screen.getByLabelText('Temporary password'), { target: { value: 'Temporary-123' } });
+  };
+
+  it('validates a new account before creating it', async () => {
+    await openAddForm();
+    fireEvent.change(screen.getByLabelText('Temporary password'), { target: { value: 'short' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
+    expect(screen.getByText('The temporary password needs at least 10 characters.')).toBeTruthy();
     expect(holder.fake.state.invoked).toHaveLength(0);
   });
 
-  it('sends a valid invite and confirms it', async () => {
-    fireEvent.click(await screen.findByRole('button', { name: 'Invite staff' }));
-    fireEvent.change(screen.getByLabelText('Full name'), { target: { value: 'New Person' } });
-    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'New@Medium.mv' } });
+  it('creates an account with a temporary password, without sending email', async () => {
+    await openAddForm();
     fireEvent.change(screen.getByLabelText('Role'), { target: { value: 'events' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Send invitation' }));
-    expect(await screen.findByText('Invitation sent to new@medium.mv.')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
+    expect(
+      await screen.findByText(
+        "Account created for new@medium.mv. Give them the temporary password; they'll choose their own when they first sign in.",
+      ),
+    ).toBeTruthy();
     expect(holder.fake.state.invoked).toEqual([
-      { name: 'invite-staff', body: { email: 'new@medium.mv', full_name: 'New Person', role: 'events' } },
+      {
+        name: 'manage-staff',
+        body: { action: 'create', email: 'new@medium.mv', full_name: 'New Person', role: 'events', temp_password: 'Temporary-123' },
+      },
     ]);
   });
 
-  it('shows the server error when an invite is refused', async () => {
+  it('shows the server error when an account is refused', async () => {
     holder.fake.state.invokeResult = {
       data: null,
       error: { context: { json: async () => ({ ok: false, error: 'That email already has an account.' }) } },
     };
-    fireEvent.click(await screen.findByRole('button', { name: 'Invite staff' }));
-    fireEvent.change(screen.getByLabelText('Full name'), { target: { value: 'Sam Again' } });
-    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'sam@medium.mv' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Send invitation' }));
+    await openAddForm();
+    fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
     expect(await screen.findByText('That email already has an account.')).toBeTruthy();
+  });
+
+  it("sets a temporary password for someone who forgot theirs", async () => {
+    const row = await rowFor('Sam Sales');
+    fireEvent.click(within(row).getByRole('button', { name: 'Reset password' }));
+    fireEvent.change(screen.getByLabelText('Temporary password for Sam Sales'), { target: { value: 'Temporary-456' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Set temporary password' }));
+    expect(await screen.findByText('Temporary password set for Sam Sales. They must choose a new one when they sign in.')).toBeTruthy();
+    expect(holder.fake.state.invoked).toEqual([
+      { name: 'manage-staff', body: { action: 'reset_password', user_id: 'u-sam', temp_password: 'Temporary-456' } },
+    ]);
   });
 
   it("doesn't let you change your own access", async () => {
     const myRow = await rowFor('Aisha Admin');
     const select = within(myRow).getByLabelText('Role for Aisha Admin') as HTMLSelectElement;
     const button = within(myRow).getByRole('button', { name: 'Deactivate' });
+    expect((within(myRow).getByRole('button', { name: 'Reset password' }) as HTMLButtonElement).disabled).toBe(true);
     expect(select.disabled).toBe(true);
     expect((button as HTMLButtonElement).disabled).toBe(true);
     expect(button.getAttribute('title')).toBe("You can't change your own access");

@@ -80,7 +80,7 @@ describe('authentication', () => {
   });
 });
 
-describe('set password', () => {
+describe('first sign-in password change', () => {
   const fill = (password: string, confirm: string) => {
     fireEvent.change(screen.getByLabelText('New password'), { target: { value: password } });
     fireEvent.change(screen.getByLabelText('Confirm password'), { target: { value: confirm } });
@@ -88,29 +88,43 @@ describe('set password', () => {
   };
 
   beforeEach(() => {
-    holder.fake = createFakeSupabase({ profiles: [admin], session: { user: { id: admin.id, email: admin.email } } });
+    holder.fake = createFakeSupabase({ profiles: [makeProfile({ must_change_password: true })] });
   });
 
-  it('requires at least 10 characters', async () => {
-    renderAt('/set-password');
+  it('sends a user with a temporary password to choose a new one first', async () => {
+    renderAt('/');
+    await signInViaForm();
+    expect(await screen.findByRole('heading', { name: 'Choose a new password' })).toBeTruthy();
+    expect(screen.queryByText('Welcome, Aisha')).toBeNull();
+  });
+
+  it('requires at least 10 characters and matching passwords', async () => {
+    renderAt('/');
+    await signInViaForm();
     await screen.findByLabelText('New password');
     fill('short', 'short');
     expect(screen.getByText('Use at least 10 characters.')).toBeTruthy();
-  });
-
-  it('requires both passwords to match', async () => {
-    renderAt('/set-password');
-    await screen.findByLabelText('New password');
     fill('long-enough-1', 'long-enough-2');
     expect(screen.getByText("Passwords don't match.")).toBeTruthy();
   });
 
-  it('saves the password and opens the dashboard', async () => {
+  it('saves the new password, clears the flag and opens the dashboard', async () => {
     const updateUser = vi.spyOn(holder.fake.client.auth, 'updateUser');
-    renderAt('/set-password');
+    renderAt('/');
+    await signInViaForm();
     await screen.findByLabelText('New password');
     fill('long-enough-1', 'long-enough-1');
     await waitFor(() => expect(updateUser).toHaveBeenCalledWith({ password: 'long-enough-1' }));
+    expect(holder.fake.state.rpcCalls).toEqual([{ name: 'clear_password_flag', args: undefined }]);
     expect(await screen.findByText('Welcome, Aisha')).toBeTruthy();
+  });
+});
+
+describe('no email features', () => {
+  it('has no email-based password reset', async () => {
+    renderAt('/login');
+    await screen.findByRole('heading', { name: 'Sign in to MEDIUM Admin' });
+    expect(screen.queryByText(/Forgot password/)).toBeNull();
+    expect(screen.getByText('Forgot your password? Ask a MEDIUM admin to set a temporary one.')).toBeTruthy();
   });
 });

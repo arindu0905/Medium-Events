@@ -19,6 +19,8 @@ export const RequireAuth: React.FC<{ roles?: StaffRole[]; children?: React.React
 
   if (loading) return <p className="p-8 text-sm text-muted">Loading…</p>;
   if (!session || !profile) return <Navigate to="/login" replace state={{ from: pathname }} />;
+  // Someone still on a temporary password must choose their own before using anything else
+  if (profile.must_change_password && pathname !== '/change-password') return <Navigate to="/change-password" replace />;
   if (roles && !roles.includes(profile.role)) {
     return (
       <div className="p-8">

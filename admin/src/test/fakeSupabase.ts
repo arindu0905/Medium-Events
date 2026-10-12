@@ -17,6 +17,7 @@ export function createFakeSupabase(init: { profiles?: Profile[]; password?: stri
     handlers: {} as Record<string, TableHandler>,
     queries: [] as { table: string; calls: QueryCall[] }[],
     invoked: [] as { name: string; body: unknown }[],
+    rpcCalls: [] as { name: string; args: unknown }[],
     invokeResult: { data: { ok: true }, error: null } as { data: unknown; error: unknown },
   };
   const listeners = new Set<(event: AuthEvent, session: Session) => void>();
@@ -77,6 +78,13 @@ export function createFakeSupabase(init: { profiles?: Profile[]; password?: stri
       resetPasswordForEmail: async () => ({ data: {}, error: null }),
     },
     from,
+    // Only the RPCs the app uses: clearing your own "must change password" flag
+    rpc: async (name: string, args?: unknown) => {
+      state.rpcCalls.push({ name, args });
+      const me = state.profiles.find((p) => p.id === state.session?.user.id);
+      if (name === 'clear_password_flag' && me) me.must_change_password = false;
+      return { data: null, error: null };
+    },
     functions: {
       invoke: async (name: string, options: { body: unknown }) => {
         state.invoked.push({ name, body: options.body });
@@ -95,6 +103,7 @@ export function makeProfile(overrides: Partial<Profile> = {}): Profile {
     email: 'admin@medium.test',
     role: 'admin',
     active: true,
+    must_change_password: false,
     created_at: '2026-10-01T09:00:00Z',
     updated_at: null,
     ...overrides,

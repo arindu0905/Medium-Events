@@ -4,6 +4,20 @@
 **Status:** Approved in conversation, awaiting spec review
 **Builds on:** branch `feat/international-redesign` (public site). Public site behaviour is unchanged by this piece.
 
+## Amendment (approved in conversation, 2026-10-12)
+
+This amendment supersedes the parts of sections 1, 4, 5, 7 and 8 that mention email invitations, password-reset emails or `/set-password`.
+
+- **No emails from Supabase.** Supabase is used for sign-in checking and data storage only.
+- **Default admin:** the setup script `scripts/create-default-admin.mjs` creates `admin@medium.mv` (overridable with `--email`) with the password from `DEFAULT_ADMIN_PASSWORD` in `supabase/.env.local` (never in code). It refuses to run if any active admin exists.
+- **`profiles.must_change_password boolean not null default true`.** Set on account creation and on admin password reset. While true, the admin app only allows `/change-password`. Cleared by the `security definer` RPC `clear_password_flag()`, which only touches `auth.uid()`'s row.
+- **Edge Function `manage-staff`** (replaces `invite-staff`), active admins only:
+  - `{ action: 'create', email, full_name, role, temp_password }` → `auth.admin.createUser({ email, password, email_confirm: true })` + profile insert. 409 for an existing email.
+  - `{ action: 'reset_password', user_id, temp_password }` → `auth.admin.updateUserById` + set `must_change_password = true`. Refuses the caller's own id.
+  - Temporary passwords need at least 10 characters (`supabase/functions/manage-staff/validate.ts`, shared with the admin app).
+- **Admin app:** "Forgot password?" removed (staff ask an admin); `/set-password` replaced by the forced `/change-password` page; Staff page has "Add staff" (with temporary password) and "Reset password" per person (not for yourself).
+- **Development demo mode removed.**
+
 ## 1. Context and goal
 
 MEDIUM wants a backend for event management and report management with report generation. Agreed decomposition (each piece gets its own spec):
