@@ -1,28 +1,85 @@
-import React from 'react';
-import { NavLink, Outlet } from 'react-router';
+import React, { useEffect, useState } from 'react';
+import { NavLink, Outlet, useLocation } from 'react-router';
+import { Activity, LayoutDashboard, LogOut, Menu, Users, X } from 'lucide-react';
 import { useAuth } from '../lib/auth';
+import { NAV_ITEMS, type SectionId } from '../lib/permissions';
 import { ROLE_LABELS } from '../lib/types';
+
+const ICONS: Record<SectionId, React.FC<{ className?: string }>> = {
+  dashboard: LayoutDashboard,
+  staff: Users,
+  activity: Activity,
+};
 
 export const Layout: React.FC = () => {
   const { profile, role, signOut } = useAuth();
+  const { pathname } = useLocation();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => setMenuOpen(false), [pathname]);
+
+  const items = NAV_ITEMS.filter((item) => role && item.roles.includes(role));
+
   return (
-    <div className="min-h-screen">
-      <header className="flex items-center justify-between border-b border-line bg-white px-6 py-3">
-        <span className="font-semibold text-ink">MEDIUM Admin</span>
-        <span className="text-sm text-body">
-          {profile?.full_name} · {role && ROLE_LABELS[role]}
-          <button type="button" onClick={signOut} className="ml-4 font-semibold text-brand cursor-pointer">
-            Sign out
+    <div className="min-h-screen lg:grid lg:grid-cols-[240px_1fr]">
+      <aside className={`${menuOpen ? 'block' : 'hidden'} lg:block border-r border-line bg-white`}>
+        <div className="hidden lg:flex items-center gap-2 px-5 h-16 border-b border-line">
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-brand text-sm font-bold text-white">M</span>
+          <span className="font-semibold text-ink">MEDIUM Admin</span>
+        </div>
+        <nav aria-label="Admin" className="p-3 space-y-1">
+          {items.map((item) => {
+            const Icon = ICONS[item.id];
+            return (
+              <NavLink
+                key={item.id}
+                to={item.path}
+                end={item.path === '/'}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium focus-visible:outline-2 focus-visible:outline-brand ${
+                    isActive ? 'bg-brand-tint text-brand' : 'text-body hover:bg-surface hover:text-ink'
+                  }`
+                }
+              >
+                <Icon className="w-4 h-4" aria-hidden="true" />
+                {item.label}
+              </NavLink>
+            );
+          })}
+        </nav>
+      </aside>
+
+      <div className="min-w-0">
+        <header className="flex items-center justify-between gap-4 h-16 border-b border-line bg-white px-4 sm:px-6">
+          <button
+            type="button"
+            onClick={() => setMenuOpen((open) => !open)}
+            aria-expanded={menuOpen}
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+            className="lg:hidden rounded-md p-2 -ml-2 text-ink hover:bg-surface focus-visible:outline-2 focus-visible:outline-brand cursor-pointer"
+          >
+            {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
-        </span>
-      </header>
-      <nav aria-label="Admin" className="flex gap-4 border-b border-line bg-white px-6 py-2 text-sm">
-        <NavLink to="/">Dashboard</NavLink>
-        <NavLink to="/activity">Activity log</NavLink>
-      </nav>
-      <main className="p-6">
-        <Outlet />
-      </main>
+          <span className="lg:hidden font-semibold text-ink">MEDIUM Admin</span>
+          <div className="ml-auto flex items-center gap-3 text-sm">
+            <span className="hidden sm:inline font-medium text-ink">{profile?.full_name}</span>
+            {role && (
+              <span className="rounded-md bg-brand-tint px-2 py-0.5 text-xs font-semibold text-brand">{ROLE_LABELS[role]}</span>
+            )}
+            <button
+              type="button"
+              onClick={signOut}
+              className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 font-semibold text-body hover:text-ink hover:bg-surface focus-visible:outline-2 focus-visible:outline-brand cursor-pointer"
+            >
+              <LogOut className="w-4 h-4" aria-hidden="true" />
+              Sign out
+            </button>
+          </div>
+        </header>
+        <main className="p-4 sm:p-8">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 };

@@ -1,14 +1,36 @@
 import React from 'react';
+import { Link } from 'react-router';
 import { useAuth } from '../lib/auth';
+import { NAV_ITEMS } from '../lib/permissions';
 import { ROLE_LABELS } from '../lib/types';
+
+const DESCRIPTIONS: Record<string, string> = {
+  staff: 'Invite staff, change roles and deactivate accounts.',
+  activity: 'See who changed what, and when.',
+};
 
 export default function DashboardPage() {
   const { profile, role } = useAuth();
   const firstName = profile?.full_name.split(' ')[0] ?? '';
+  const shortcuts = NAV_ITEMS.filter((item) => item.id !== 'dashboard' && role && item.roles.includes(role));
+
   return (
     <section>
-      <h1 className="text-2xl font-bold text-ink">Welcome, {firstName}</h1>
+      <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink">Welcome, {firstName}</h1>
       <p className="mt-1 text-body">Signed in as {role && ROLE_LABELS[role]}</p>
+      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {shortcuts.map((item) => (
+          <Link
+            key={item.id}
+            to={item.path}
+            className="block rounded-lg border border-line bg-white p-5 hover:border-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+          >
+            <h2 className="text-base font-semibold text-ink">{item.label}</h2>
+            <p className="mt-1 text-sm text-body">{DESCRIPTIONS[item.id]}</p>
+          </Link>
+        ))}
+      </div>
+      <p className="mt-10 text-sm text-muted">Events, enquiries, sponsors and reports will appear here as they're added.</p>
     </section>
   );
 }
