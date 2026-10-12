@@ -83,7 +83,7 @@ Tasks 0, 4, 5, 6, 7 need no Supabase project (client mocked in tests). Tasks 1�
 
 **Interfaces — Produces:** `validateInvite(input: unknown): { ok: true; value: { email: string; full_name: string; role: StaffRole } } | { ok: false; error: string }`; HTTP: 200 `{ok:true}`, 400 `{ok:false,error}`, 403 `{ok:false,error:'Only active admins can invite staff.'}`, 409 for existing email.
 
-- [ ] **Step 1: Failing tests** — `validateInvite`: rejects bad email, blank name, unknown role, trims/lowercases email. `invite.test.ts`: as `sales` → 403; as inactive admin → 403; bad body → 400; existing profile email → 409 `That email already has an account.`; auth user without profile (create via service client) → 409 with message telling the admin to remove the orphan from the Staff page? No UI for that in piece 1 → message `An unfinished invite exists for this email. Ask a developer to remove it in Supabase Auth.`; valid invite as admin → 200, profile row exists with role; cleanup deletes the auth user.
+- [ ] **Step 1: Failing tests** — `validateInvite`: rejects bad email, blank name, unknown role, trims/lowercases email. `invite.test.ts`: as `sales` → 403; as inactive admin → 403; bad body → 400; existing profile email → 409 `That email already has an account.`; auth user without profile (create via service client) → 409 `An unfinished invite exists for this email. Ask a developer to remove it in Supabase Auth.`; valid invite as admin → 200, profile row exists with role; cleanup deletes the auth user.
 - [ ] **Step 2:** run → FAIL.
 - [ ] **Step 3:** Implement; `supabase secrets set ADMIN_URL=http://localhost:3010`; `npx supabase functions deploy invite-staff --use-api`.
 - [ ] **Step 4:** `npm run test:db` and `npm --prefix admin test` → PASS.
