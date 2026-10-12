@@ -25,7 +25,8 @@ Pages are listed once in `src/routes.ts`. Adding a page there adds it to the rou
 
 1. Copy `.env.example` to `.env` and fill in the values below.
 2. Run `npm run build`.
-3. Upload the contents of `dist/` to any static host (Vercel, Netlify, Cloudflare Pages, cPanel/Apache, etc.). Every page is a real HTML file, so no server or rewrite rules are needed.
+3. Upload the contents of `dist/` to any static host (Vercel, Netlify, Cloudflare Pages, cPanel/Apache, etc.). Every page is a real HTML file, so no server is needed.
+   - **Apache / cPanel:** the included `.htaccess` serves `/contact` from `contact.html` instead of redirecting to `/contact/`. Make sure hidden files are uploaded and `mod_rewrite` is enabled. After launch, check that `https://medium.mv/contact` loads without a redirect.
 
 | Variable | Purpose | If empty |
 |---|---|---|
@@ -36,7 +37,7 @@ Pages are listed once in `src/routes.ts`. Adding a page there adds it to the rou
 ### One-time setup for MEDIUM
 
 1. **Enquiry emails:** sign up at web3forms.com with info@medium.mv and send the access key to the developer (it is safe to include in the website).
-2. **Analytics:** create a Google Analytics 4 property and send the measurement ID. Tracked actions: `generate_lead` (enquiry delivered), `whatsapp_click`, `contact_click` (phone/email links), `facebook_event_click`.
+2. **Analytics:** create a Google Analytics 4 property and send the measurement ID. In the web data stream, open *Enhanced measurement* settings and turn **off** "Page changes based on browser history events" — the site reports page views itself, and leaving it on double-counts them. Tracked actions: `generate_lead` (enquiry delivered), `whatsapp_click`, `contact_click` (phone/email links), `facebook_event_click`.
 3. **Google Search:** after launch, add the site in [Google Search Console](https://search.google.com/search-console), verify ownership and submit `https://medium.mv/sitemap.xml`.
 4. **Social previews:** paste each page URL into the [Facebook Sharing Debugger](https://developers.facebook.com/tools/debug/) to confirm the preview image and text.
 

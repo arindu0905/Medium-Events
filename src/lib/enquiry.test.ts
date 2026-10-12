@@ -68,6 +68,17 @@ describe('submitEnquiry', () => {
     expect(await submitEnquiry(data, 'KEY', '', fetchImpl)).toEqual({ ok: false, reason: 'rejected' });
   });
 
+  it('gives up on a stalled request so the fallbacks can be shown', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(new Response(JSON.stringify({ success: true })));
+    await submitEnquiry(data, 'KEY', '', fetchImpl);
+    expect(fetchImpl.mock.calls[0][1].signal).toBeInstanceOf(AbortSignal);
+
+    const hanging = vi.fn((_url: string, init: RequestInit) =>
+      new Promise((_, reject) => init.signal!.addEventListener('abort', () => reject(init.signal!.reason))),
+    );
+    expect(await submitEnquiry(data, 'KEY', '', hanging as unknown as typeof fetch, 20)).toEqual({ ok: false, reason: 'network' });
+  });
+
   it('reports network failures', async () => {
     const fetchImpl = vi.fn().mockRejectedValue(new TypeError('Failed to fetch'));
     expect(await submitEnquiry(data, 'KEY', '', fetchImpl)).toEqual({ ok: false, reason: 'network' });

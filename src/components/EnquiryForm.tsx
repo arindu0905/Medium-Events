@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useSearchParams } from 'react-router';
 import { Send, CheckCircle2, AlertCircle, Loader2, Phone, Mail, MapPin, Clock, MessageCircle } from 'lucide-react';
@@ -29,6 +29,7 @@ export const EnquiryForm: React.FC = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [sendState, setSendState] = useState<SendState>('idle');
   const isSubmitting = sendState === 'sending';
+  const honeypotRef = useRef<HTMLInputElement>(null);
 
   // Prefill from /contact?service= or ?event= (applied after mount so it matches the pre-rendered HTML)
   useEffect(() => {
@@ -73,6 +74,12 @@ export const EnquiryForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
+
+    // Bots tick the hidden honeypot: show them a normal confirmation and send nothing
+    if (honeypotRef.current?.checked) {
+      setSendState('sent');
+      return;
+    }
 
     // Until MEDIUM's Web3Forms key is configured, enquiries go out over WhatsApp instead
     if (!WEB3FORMS_KEY) {
@@ -179,6 +186,16 @@ export const EnquiryForm: React.FC = () => {
                   <span className="text-[11px] text-slate-400 block">
                     Alt: {COMPANY_DETAILS.secondaryPhone}
                   </span>
+                  <a
+                    href={buildWhatsAppUrl(COMPANY_DETAILS.whatsapp, "Hi MEDIUM, I'd like to make an enquiry.")}
+                    onClick={() => trackEvent('whatsapp_click', { location: 'contact_page' })}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-[#25D366] hover:text-white transition-colors"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    <span>Chat on WhatsApp ({COMPANY_DETAILS.whatsapp})</span>
+                  </a>
                 </div>
               </div>
 
@@ -275,7 +292,7 @@ export const EnquiryForm: React.FC = () => {
                   >
                     {/* Honeypot: hidden from people, bots fill it in and Web3Forms discards the submission */}
                     <div aria-hidden="true" className="hidden">
-                      <input type="checkbox" name="botcheck" tabIndex={-1} autoComplete="off" />
+                      <input ref={honeypotRef} type="checkbox" name="botcheck" tabIndex={-1} autoComplete="off" />
                     </div>
 
                     <div className="border-b border-white/08 pb-4">

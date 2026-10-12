@@ -118,3 +118,26 @@ describe('EnquiryForm prefill and spam protection', () => {
     expect(honeypot.closest('[aria-hidden="true"]')).toBeTruthy();
   });
 });
+
+describe('EnquiryForm review fixes', () => {
+  beforeEach(() => {
+    mockConfig.key = 'TEST-KEY';
+  });
+
+  it('offers a WhatsApp chat link on the contact page even when email delivery is configured', () => {
+    renderForm();
+    const link = screen.getByRole('link', { name: /Chat on WhatsApp/ });
+    expect(link.getAttribute('href')).toMatch(/^https:\/\/wa\.me\/9607997974\?text=/);
+  });
+
+  it('drops submissions that tick the honeypot without sending them', async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    const { container } = renderForm();
+    fillRequired();
+    fireEvent.click(container.querySelector('input[name="botcheck"]')!);
+    fireEvent.click(screen.getByRole('button', { name: /Send Enquiry/ }));
+    expect(await screen.findByText(/MEDIUM will be in touch/)).toBeTruthy();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+});

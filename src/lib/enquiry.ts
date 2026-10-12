@@ -3,6 +3,7 @@ import type { EnquirySubmission } from '../types';
 // Delivers enquiries to MEDIUM's inbox via Web3Forms, plus WhatsApp/email links used as fallbacks.
 
 const WEB3FORMS_ENDPOINT = 'https://api.web3forms.com/submit';
+const DEFAULT_TIMEOUT_MS = 15000;
 
 export type SubmitResult = { ok: true } | { ok: false; reason: 'network' | 'rejected' };
 
@@ -15,11 +16,13 @@ export async function submitEnquiry(
   key: string,
   pageUrl: string,
   fetchImpl: typeof fetch = fetch,
+  timeoutMs = DEFAULT_TIMEOUT_MS,
 ): Promise<SubmitResult> {
   let response: Response;
   try {
     response = await fetchImpl(WEB3FORMS_ENDPOINT, {
       method: 'POST',
+      signal: AbortSignal.timeout(timeoutMs),
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify({
         access_key: key,

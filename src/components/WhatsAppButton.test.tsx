@@ -39,4 +39,9 @@ describe('WhatsAppButton', () => {
     fireEvent.click(screen.getByRole('link', { name: 'Chat with MEDIUM on WhatsApp' }));
     expect(trackEvent).toHaveBeenCalledWith('whatsapp_click', { location: 'floating' });
   });
+
+  it('is not rendered at /contact/ with a trailing slash either', () => {
+    renderAt('/contact/');
+    expect(screen.queryByRole('link', { name: 'Chat with MEDIUM on WhatsApp' })).toBeNull();
+  });
 });

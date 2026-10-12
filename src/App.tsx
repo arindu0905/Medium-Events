@@ -29,7 +29,8 @@ export default function App() {
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    trackPageView(location.pathname, routeForPath(location.pathname)?.title ?? document.title);
+    const route = routeForPath(location.pathname);
+    trackPageView(route?.path ?? location.pathname, route?.title ?? document.title);
   }, [location.pathname]);
 
   return (

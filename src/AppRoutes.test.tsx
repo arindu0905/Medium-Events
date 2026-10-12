@@ -1,9 +1,12 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter, useLocation } from 'react-router';
 import { AppRoutes } from './AppRoutes';
 import { contactPath } from './routes';
 import { FLAGSHIP_EVENTS_DATA } from './data/websiteData';
+import { trackPageView } from './lib/analytics';
+
+vi.mock('./lib/analytics', () => ({ initAnalytics: vi.fn(), trackPageView: vi.fn(), trackEvent: vi.fn() }));
 
 function LocationProbe() {
   const location = useLocation();
@@ -54,5 +57,11 @@ describe('AppRoutes', () => {
     renderAt('/events');
     const links = await screen.findAllByRole('link', { name: /Sponsorship/ });
     expect(links[0].getAttribute('href')).toBe(contactPath({ event: FLAGSHIP_EVENTS_DATA[0].name }));
+  });
+
+  it('reports page views under the canonical path', async () => {
+    renderAt('/contact/');
+    await screen.findAllByRole('heading');
+    expect(trackPageView).toHaveBeenCalledWith('/contact', 'Contact & Sponsorship Enquiries | MEDIUM Events Maldives');
   });
 });
