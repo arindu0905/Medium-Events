@@ -1,31 +1,173 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router';
-import { COMPANY_DETAILS } from '../data/websiteData';
+import { Send, X } from 'lucide-react';
+import { COMPANY_DETAILS, seriesBySlug } from '../data/websiteData';
 import { buildWhatsAppUrl } from '../lib/enquiry';
 import { routeForPath } from '../routes';
 import { trackEvent } from '../lib/analytics';
+import { MediumMark } from './Logo';
+import { WhatsAppIcon } from './WhatsAppIcon';
 
-const GREETING = "Hi MEDIUM, I'm interested in your events and services.";
+// Quick topics; `series` is the event series the visitor is looking at, if any
+const TOPICS: { label: string; message: (series?: string) => string }[] = [
+  {
+    label: 'Sponsorship',
+    message: (series) => `Hi MEDIUM, I'd like to discuss sponsorship of ${series ?? 'one of your events'}.`,
+  },
+  {
+    label: 'Exhibition stand',
+    message: (series) => `Hi MEDIUM, I'd like to book an exhibition stand${series ? ` at ${series}` : ''}.`,
+  },
+  { label: 'Advertising or design', message: () => "Hi MEDIUM, I'd like to talk about an advertising or design project." },
+  { label: 'Something else', message: () => 'Hi MEDIUM, I have a question: ' },
+];
 
-// Floating chat shortcut. Not shown on the contact page, where it would cover the
-// full-width submit button and the form already offers WhatsApp.
+// Floating WhatsApp chat: a small panel to pick a topic and write a message, then hand off to
+// WhatsApp. Not shown on the contact page, where it would cover the form's submit button and the
+// page already offers WhatsApp.
 export const WhatsAppButton: React.FC = () => {
-  const onContactPage = routeForPath(useLocation().pathname)?.id === 'contact';
-  if (onContactPage) return null;
+  const { pathname } = useLocation();
+  const route = routeForPath(pathname);
+  const series = route?.seriesSlug ? seriesBySlug(route.seriesSlug)?.name : undefined;
+  const greeting = series ? `Hi MEDIUM, I'm interested in ${series}.` : "Hi MEDIUM, I'm interested in your events and services.";
+
+  const [open, setOpen] = useState(false);
+  const [message, setMessage] = useState(greeting);
+  const [error, setError] = useState('');
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const messageRef = useRef<HTMLTextAreaElement>(null);
+
+  const close = (returnFocus = true) => {
+    setOpen(false);
+    if (returnFocus) toggleRef.current?.focus();
+  };
+
+  const openPanel = () => {
+    setMessage(greeting);
+    setError('');
+    setOpen(true);
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    messageRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') close();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open]);
+
+  // Close when the visitor navigates to another page
+  useEffect(() => setOpen(false), [pathname]);
+
+  if (route?.id === 'contact') return null;
+
+  const send = (e: React.MouseEvent) => {
+    if (!message.trim()) {
+      e.preventDefault();
+      setError('Type a message first.');
+      messageRef.current?.focus();
+      return;
+    }
+    trackEvent('whatsapp_click', { location: 'floating' });
+    close(false);
+  };
 
   return (
-    <a
-      href={buildWhatsAppUrl(COMPANY_DETAILS.whatsapp, GREETING)}
-      target="_blank"
-      rel="noopener noreferrer"
-      onClick={() => trackEvent('whatsapp_click', { location: 'floating' })}
-      aria-label="Chat with MEDIUM on WhatsApp"
-      title="Chat with MEDIUM on WhatsApp"
-      className="fixed right-5 bottom-5 z-40 w-14 h-14 rounded-full bg-[#25D366] hover:bg-[#1faa53] text-white shadow-lg shadow-black/40 flex items-center justify-center transition-all duration-200 hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-    >
-      <svg viewBox="0 0 24 24" className="w-7 h-7" fill="currentColor" aria-hidden="true">
-        <path d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.64.07-.3-.15-1.25-.46-2.38-1.47-.88-.79-1.47-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.03-.52-.07-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.08c.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.63.71.23 1.36.2 1.87.12.57-.09 1.75-.72 2-1.41.25-.69.25-1.29.17-1.41-.07-.12-.27-.2-.57-.35zM12.04 21.5h-.01a9.46 9.46 0 0 1-4.82-1.32l-.35-.21-3.58.94.96-3.49-.23-.36a9.43 9.43 0 0 1-1.45-5.03c0-5.22 4.25-9.47 9.48-9.47 2.53 0 4.91.99 6.7 2.78a9.41 9.41 0 0 1 2.77 6.7c0 5.23-4.25 9.47-9.47 9.47zm8.06-17.53A11.32 11.32 0 0 0 12.04.63C5.76.63.65 5.74.65 12.02c0 2.01.52 3.97 1.52 5.7L.55 23.63l6.05-1.59a11.36 11.36 0 0 0 5.44 1.39h.01c6.28 0 11.39-5.11 11.39-11.39 0-3.04-1.19-5.9-3.34-8.05z" />
-      </svg>
-    </a>
+    <>
+      {open && (
+        <div
+          role="dialog"
+          aria-label="Chat with MEDIUM Events"
+          className="fixed right-4 sm:right-5 bottom-24 z-40 w-[calc(100vw-2rem)] sm:w-[360px] rounded-xl border border-line bg-white shadow-xl overflow-hidden"
+        >
+          <div className="flex items-center gap-3 bg-[#075E54] px-4 py-3 text-white">
+            <MediumMark size={36} />
+            <div className="flex-grow">
+              <p className="text-sm font-semibold">MEDIUM Events</p>
+              <p className="text-xs text-white/80">We reply on WhatsApp</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => close()}
+              aria-label="Close chat"
+              className="rounded-md p-1.5 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-white cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="bg-[#ECE5DD] px-4 py-4 space-y-3">
+            <p className="max-w-[85%] rounded-lg rounded-tl-none bg-white px-3 py-2 text-sm text-ink shadow-sm">
+              Hi there! How can we help? Choose a topic or type your message.
+            </p>
+            <div className="flex flex-wrap gap-2" role="group" aria-label="Quick topics">
+              {TOPICS.map((topic) => (
+                <button
+                  key={topic.label}
+                  type="button"
+                  onClick={() => {
+                    setMessage(topic.message(series));
+                    setError('');
+                    messageRef.current?.focus();
+                  }}
+                  className="rounded-full border border-[#075E54]/30 bg-white px-3 py-1.5 text-xs font-medium text-[#075E54] hover:bg-[#075E54] hover:text-white focus-visible:outline-2 focus-visible:outline-[#075E54] cursor-pointer"
+                >
+                  {topic.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="border-t border-line p-3">
+            <label htmlFor="whatsapp-message" className="sr-only">
+              Your message
+            </label>
+            <textarea
+              id="whatsapp-message"
+              ref={messageRef}
+              rows={3}
+              value={message}
+              onChange={(e) => {
+                setMessage(e.target.value);
+                if (error) setError('');
+              }}
+              aria-invalid={Boolean(error) || undefined}
+              aria-describedby={error ? 'whatsapp-message-error' : undefined}
+              className="w-full resize-none rounded-md border border-line px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-[#075E54]/30 focus:border-[#075E54]"
+            />
+            {error && (
+              <p id="whatsapp-message-error" className="mt-1 text-xs text-red-700">
+                {error}
+              </p>
+            )}
+            <a
+              href={buildWhatsAppUrl(COMPANY_DETAILS.whatsapp, message)}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={send}
+              className="mt-2 flex w-full items-center justify-center gap-2 rounded-md bg-[#1a7f43] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#156b38] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1a7f43]"
+            >
+              <Send className="w-4 h-4" aria-hidden="true" />
+              Open WhatsApp
+            </a>
+          </div>
+        </div>
+      )}
+
+      <button
+        ref={toggleRef}
+        type="button"
+        onClick={() => (open ? close() : openPanel())}
+        aria-expanded={open}
+        aria-haspopup="dialog"
+        aria-label="Chat with MEDIUM on WhatsApp"
+        title="Chat with MEDIUM on WhatsApp"
+        className="fixed right-5 bottom-5 z-40 w-14 h-14 rounded-full bg-[#25D366] hover:bg-[#1faa53] text-white shadow-lg shadow-black/30 flex items-center justify-center transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand cursor-pointer"
+      >
+        {open ? <X className="w-7 h-7" aria-hidden="true" /> : <WhatsAppIcon />}
+      </button>
+    </>
   );
 };
