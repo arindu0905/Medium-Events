@@ -35,9 +35,9 @@ describe('AppRoutes', () => {
     }
   });
 
-  it('renders the Info Center at /news', async () => {
+  it('renders the News page at /news', async () => {
     renderAt('/news');
-    expect(await screen.findByRole('heading', { name: 'News, Expo Bulletins & Press Releases' })).toBeTruthy();
+    expect((await screen.findByRole('heading', { level: 1 })).textContent).toBe('News and announcements');
   });
 
   it('redirects legacy hash links on the home page', async () => {

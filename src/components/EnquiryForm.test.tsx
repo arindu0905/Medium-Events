@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { EnquiryForm } from './EnquiryForm';
+import { SERVICE_OPTIONS } from '../data/websiteData';
 import { trackEvent } from '../lib/analytics';
 
 vi.mock('../lib/analytics', () => ({ trackEvent: vi.fn() }));
@@ -23,10 +24,10 @@ function renderForm(url = '/contact') {
 }
 
 function fillRequired() {
-  fireEvent.change(screen.getByPlaceholderText('e.g. Ibrahim Rasheed'), { target: { value: 'Aisha' } });
-  fireEvent.change(screen.getByPlaceholderText('name@organization.mv'), { target: { value: 'aisha@co.mv' } });
-  fireEvent.change(screen.getByPlaceholderText('+960 770-0000'), { target: { value: '7771234' } });
-  fireEvent.change(screen.getByPlaceholderText(/Detail your event scope/), {
+  fireEvent.change(screen.getByLabelText(/^Full name/), { target: { value: 'Aisha' } });
+  fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: 'aisha@co.mv' } });
+  fireEvent.change(screen.getByLabelText(/^Phone/), { target: { value: '7771234' } });
+  fireEvent.change(screen.getByLabelText(/^Your message/), {
     target: { value: 'We would like a booth at Build Expo.' },
   });
 }
@@ -66,7 +67,7 @@ describe('EnquiryForm without a Web3Forms key', () => {
     renderForm();
     fireEvent.click(screen.getByRole('button', { name: /Send via WhatsApp/ }));
     expect(open).not.toHaveBeenCalled();
-    expect(screen.getByText('Please enter your full name.')).toBeTruthy();
+    expect(screen.getByText('Enter your full name.')).toBeTruthy();
   });
 });
 
@@ -79,25 +80,43 @@ describe('EnquiryForm with a Web3Forms key', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ success: true }))));
     renderForm();
     fillRequired();
-    fireEvent.click(screen.getByRole('button', { name: /Send Enquiry/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Send enquiry/i }));
     expect(await screen.findByText('Thanks, Aisha. MEDIUM will be in touch within 1 business day.')).toBeTruthy();
     expect(document.body.textContent).not.toMatch(/MED-\d{6}/);
-    expect(trackEvent).toHaveBeenCalledWith('generate_lead', { service: 'Events & Turnkey Management', event: '' });
+    expect(trackEvent).toHaveBeenCalledWith('generate_lead', { service: 'General enquiry', event: '' });
   });
 
   it('keeps the typed enquiry and offers WhatsApp and email when sending fails', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
     renderForm();
     fillRequired();
-    fireEvent.click(screen.getByRole('button', { name: /Send Enquiry/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Send enquiry/i }));
 
     const whatsapp = await screen.findByRole('link', { name: /Send on WhatsApp instead/ });
     expect(whatsapp.getAttribute('href')).toMatch(/^https:\/\/wa\.me\/9607997974\?text=/);
     expect(screen.getByRole('link', { name: /Send by email instead/ }).getAttribute('href')).toMatch(/^mailto:info@medium\.mv/);
-    expect((screen.getByPlaceholderText(/Detail your event scope/) as HTMLTextAreaElement).value).toBe(
+    expect((screen.getByLabelText(/^Your message/) as HTMLTextAreaElement).value).toBe(
       'We would like a booth at Build Expo.',
     );
     expect(trackEvent).not.toHaveBeenCalledWith('generate_lead', expect.anything());
+  });
+});
+
+describe('EnquiryForm enquiry types', () => {
+  it('offers exactly the site enquiry types', () => {
+    renderForm();
+    const select = screen.getByLabelText(/^Enquiry type/) as HTMLSelectElement;
+    expect([...select.options].map((o) => o.textContent)).toEqual(SERVICE_OPTIONS.map((o) => o.label));
+  });
+
+  it('selects sponsorship from the header button link', () => {
+    renderForm('/contact?service=sponsorship');
+    expect((screen.getByLabelText(/^Enquiry type/) as HTMLSelectElement).value).toBe('Sponsorship or exhibition stand');
+  });
+
+  it('selects a service from a services page link', () => {
+    renderForm('/contact?service=design');
+    expect((screen.getByLabelText(/^Enquiry type/) as HTMLSelectElement).value).toBe('Design and production');
   });
 });
 
@@ -105,8 +124,8 @@ describe('EnquiryForm prefill and spam protection', () => {
   it('selects sponsorship and names the event from the URL', async () => {
     renderForm('/contact?event=Aviation%20Forum%20%E2%80%93%20Connecting%20Maldives%20(AF)');
     const select = screen.getAllByRole('combobox')[0] as HTMLSelectElement;
-    expect(select.value).toBe('Flagship Expo Sponsorship / Booth');
-    const message = screen.getByPlaceholderText(/Detail your event scope/) as HTMLTextAreaElement;
+    expect(select.value).toBe('Sponsorship or exhibition stand');
+    const message = screen.getByLabelText(/^Your message/) as HTMLTextAreaElement;
     expect(message.value).toContain('Aviation Forum – Connecting Maldives (AF)');
   });
 
@@ -136,7 +155,7 @@ describe('EnquiryForm review fixes', () => {
     const { container } = renderForm();
     fillRequired();
     fireEvent.click(container.querySelector('input[name="botcheck"]')!);
-    fireEvent.click(screen.getByRole('button', { name: /Send Enquiry/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Send enquiry/i }));
     expect(await screen.findByText(/MEDIUM will be in touch/)).toBeTruthy();
     expect(fetchMock).not.toHaveBeenCalled();
   });

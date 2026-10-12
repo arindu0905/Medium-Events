@@ -14,7 +14,7 @@ const data: EnquirySubmission = {
   company: 'Co',
   email: 'a@b.mv',
   phone: '7771234',
-  service: 'Flagship Expo Sponsorship / Booth',
+  service: 'Sponsorship or exhibition stand',
   timeline: 'Q3/Q4 2026',
   budget: '',
   message: 'Booth please',
@@ -25,11 +25,11 @@ const jsonResponse = (body: unknown, status = 200) => new Response(JSON.stringif
 
 describe('enquirySubject', () => {
   it('names the service and event', () => {
-    expect(enquirySubject(data)).toBe('New enquiry: Flagship Expo Sponsorship / Booth – Build Expo');
+    expect(enquirySubject(data)).toBe('New enquiry: Sponsorship or exhibition stand – Build Expo');
   });
 
   it('names only the service when there is no event', () => {
-    expect(enquirySubject({ ...data, event: undefined })).toBe('New enquiry: Flagship Expo Sponsorship / Booth');
+    expect(enquirySubject({ ...data, event: undefined })).toBe('New enquiry: Sponsorship or exhibition stand');
   });
 });
 
@@ -43,14 +43,14 @@ describe('submitEnquiry', () => {
     expect(init.method).toBe('POST');
     expect(JSON.parse(init.body)).toMatchObject({
       access_key: 'KEY',
-      subject: 'New enquiry: Flagship Expo Sponsorship / Booth – Build Expo',
+      subject: 'New enquiry: Sponsorship or exhibition stand – Build Expo',
       from_name: 'MEDIUM Website',
       botcheck: false,
       name: 'Aisha',
       company: 'Co',
       email: 'a@b.mv',
       phone: '7771234',
-      service: 'Flagship Expo Sponsorship / Booth',
+      service: 'Sponsorship or exhibition stand',
       timeline: 'Q3/Q4 2026',
       message: 'Booth please',
       event: 'Build Expo',

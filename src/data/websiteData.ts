@@ -384,38 +384,6 @@ export const NEWS_ARTICLES_DATA: NewsArticle[] = [
     tags: ['Aviation Forum', 'SITA', 'JEN Malé', 'Connecting Maldives'],
     image: '/images/fb/aviation-forum-2026.jpg',
   },
-  {
-    id: 'marine-expo-milestone',
-    title: 'Maldives Marine Expo Secures Landmark Participation for Upcoming Edition',
-    category: 'Expos & Forums',
-    date: 'January 2026',
-    readTime: '4 min read',
-    summary:
-      'The National Boating Association of Maldives and MEDIUM announce record exhibitor registrations for the flagship marine showcase, featuring top international naval brands.',
-    fullContent: [
-      'The National Boating Association of Maldives (NBAM) alongside turnkey event organizer MEDIUM Events Pvt Ltd announced an unprecedented surge in international and local exhibitor registrations for the Maldives Marine Expo.',
-      'Covering in-water showcases, commercial vessel components, and cutting-edge marine electrification, the expo continues its tenure as the undisputed benchmark event in the region.',
-      'Live product demonstrations and B2B procurement pacts will highlight the 4-day gathering at Hulhumalé.',
-    ],
-    tags: ['Maldives Marine Expo', 'NBAM', 'Boating', 'Exhibition'],
-    image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    id: 'visiting-guide-appointment',
-    title: 'MEDIUM Appointed by Maldives Publications to Spearhead the Maldives Visiting Guide',
-    category: 'Company News',
-    date: 'Late 2025',
-    readTime: '3 min read',
-    summary:
-      'Maldives Publications Pvt Ltd entrusts MEDIUM with the end-to-end creative direction, conceptual design, and print engineering for the official Maldives Visiting Guide.',
-    fullContent: [
-      'Maldives Publications Pvt Ltd has formally appointed MEDIUM Events Pvt Ltd to direct the creative and publication design of the authoritative Maldives Visiting Guide.',
-      'Leveraging over six decades of cumulative experience, MEDIUM’s creative unit will implement an elevated visual identity that captures the archipelago’s luxury, biodiversity, and cultural heritage.',
-      'The guide will be distributed across resort terminals, international aviation lounges, and diplomatic embassies worldwide.',
-    ],
-    tags: ['Maldives Publications', 'Creative Consultancy', 'Editorial', 'Branding'],
-    image: 'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?auto=format&fit=crop&w=800&q=80',
-  },
 ];
 
 export const CLIENT_PARTNERS = [
