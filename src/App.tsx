@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { ScrollProgress } from './components/ScrollProgress';
+import { WhatsAppButton } from './components/WhatsAppButton';
 import { legacyHashToPath } from './routes';
 import { usePageMeta } from './hooks/usePageMeta';
 
@@ -48,6 +49,8 @@ export default function App() {
 
       {/* Footer */}
       <Footer />
+
+      <WhatsAppButton />
     </div>
   );
 }
