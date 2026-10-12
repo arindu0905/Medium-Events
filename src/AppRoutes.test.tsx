@@ -48,9 +48,9 @@ describe('AppRoutes', () => {
 
   it('links navigation to real URLs', async () => {
     renderAt('/');
-    const nav = await screen.findByRole('navigation');
+    const nav = await screen.findByRole('navigation', { name: 'Main' });
     expect(within(nav).getAllByRole('link', { name: 'News' })[0].getAttribute('href')).toBe('/news');
-    expect(screen.getByRole('link', { name: 'Project Enquiry' }).getAttribute('href')).toBe('/contact');
+    expect(within(screen.getByRole('contentinfo')).getByRole('link', { name: 'Contact' }).getAttribute('href')).toBe('/contact');
   });
 
   it('links event sponsorship buttons to a prefilled contact page', async () => {

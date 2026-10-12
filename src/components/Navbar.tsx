@@ -1,184 +1,93 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router';
-import { Menu, X, ArrowUpRight, Phone, Mail } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { Logo } from './Logo';
-import { COMPANY_DETAILS } from '../data/websiteData';
-import { MAIN_ROUTES, pathFor, routeForPath } from '../routes';
-import { trackEvent } from '../lib/analytics';
+import { Button, Container } from './ui';
+import { MAIN_ROUTES, contactPath, routeForPath } from '../routes';
 
-const MotionLink = motion.create(Link);
+const SPONSOR_PATH = contactPath({ service: 'sponsorship' });
 
 export const Navbar: React.FC = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const activeSection = routeForPath(useLocation().pathname)?.id ?? 'home';
+  const { pathname } = useLocation();
+  const [menuOpen, setMenuOpen] = useState(false);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  const route = routeForPath(pathname);
+  // Series pages live under Events in the navigation
+  const activeId = route?.kind === 'series' ? 'events' : (route?.id ?? 'home');
 
-  const closeMenu = () => setMobileMenuOpen(false);
+  useEffect(() => setMenuOpen(false), [pathname]);
+  const closeMenu = () => setMenuOpen(false);
 
   return (
-    <header
-      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
-        isScrolled
-          ? 'glass-nav shadow-lg shadow-black/50 py-3'
-          : 'bg-transparent py-4 sm:py-5'
-      }`}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between">
-          {/* Logo link: 3rd image mark + 4th image transparent wordmark */}
-          <Link
-            to="/"
-            onClick={closeMenu}
-            className="flex items-center text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 rounded-lg p-1 -ml-1 transition-opacity hover:opacity-95 cursor-pointer"
-            aria-label="MEDIUM EVENTS Home"
-          >
-            <Logo variant="full" />
-          </Link>
+    <header className="fixed top-0 inset-x-0 z-40 bg-white border-b border-line">
+      <Container className="flex h-18 items-center justify-between gap-6">
+        <Link
+          to="/"
+          onClick={closeMenu}
+          aria-label="MEDIUM Events home"
+          className="flex items-center rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
+        >
+          <Logo variant="full" light={false} />
+        </Link>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
-            {MAIN_ROUTES.map((item) => {
-              const isActive = activeSection === item.id;
-              return (
-                <Link
-                  key={item.id}
-                  to={item.path}
-                  onClick={closeMenu}
-                  aria-current={isActive ? 'page' : undefined}
-                  className={`relative px-3.5 py-2 text-sm font-medium transition-colors duration-200 cursor-pointer rounded-md ${
-                    isActive
-                      ? 'text-white font-semibold'
-                      : 'text-slate-300 hover:text-white'
-                  }`}
-                >
-                  <span className="relative z-10">{item.navLabel}</span>
+        <nav aria-label="Main" className="hidden lg:flex items-center gap-1">
+          {MAIN_ROUTES.map((item) => {
+            const isActive = activeId === item.id;
+            return (
+              <Link
+                key={item.id}
+                to={item.path}
+                aria-current={isActive ? 'page' : undefined}
+                className={`px-3 py-2 text-sm font-medium rounded-md transition-colors focus-visible:outline-2 focus-visible:outline-brand ${
+                  isActive ? 'text-brand' : 'text-body hover:text-ink'
+                }`}
+              >
+                {item.navLabel}
+              </Link>
+            );
+          })}
+        </nav>
 
-                  {/* Active Indicator Line in Royal/Electric Blue */}
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeNavUnderline"
-                      className="absolute bottom-0 left-2 right-2 h-[2.5px] bg-gradient-to-r from-blue-500 via-blue-400 to-indigo-300 rounded-full"
-                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                    />
-                  )}
-
-                  {/* Hover micro-interaction */}
-                  <span className="absolute inset-0 rounded-md bg-white/0 hover:bg-white/[0.05] transition-colors pointer-events-none" />
-                </Link>
-              );
-            })}
-          </nav>
-
-          {/* Right Action CTA */}
-          <div className="hidden lg:flex items-center gap-3">
-            <a
-              href={`tel:${COMPANY_DETAILS.phone.replace(/[^0-9+]/g, '')}`}
-              onClick={() => trackEvent('contact_click', { method: 'phone' })}
-              className="flex items-center gap-1.5 text-xs font-medium text-slate-300 hover:text-white px-2.5 py-1.5 rounded transition-colors"
-              title="Call MEDIUM Operations"
-            >
-              <Phone className="w-3.5 h-3.5 text-blue-400" />
-              <span>{COMPANY_DETAILS.phone}</span>
-            </a>
-
-            <MotionLink
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              to={pathFor('contact')}
-              className="relative inline-flex items-center gap-1.5 px-4.5 py-2 text-xs font-semibold uppercase tracking-wider text-white bg-[#12229D] hover:bg-[#1a38c9] rounded-lg shadow-sm shadow-blue-950/60 transition-all duration-200 cursor-pointer border border-blue-400/30"
-            >
-              <span>Get in Touch</span>
-              <ArrowUpRight className="w-3.5 h-3.5" />
-            </MotionLink>
-          </div>
-
-          {/* Mobile Menu Button */}
-          <div className="flex md:hidden items-center gap-2">
-            <motion.button
-              whileTap={{ scale: 0.92 }}
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-lg text-slate-300 hover:text-white bg-slate-900/80 border border-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
-              aria-label={mobileMenuOpen ? 'Close Menu' : 'Open Menu'}
-              aria-expanded={mobileMenuOpen}
-            >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </motion.button>
-          </div>
+        <div className="hidden lg:block">
+          <Button to={SPONSOR_PATH} className="py-2.5">
+            Become a sponsor
+          </Button>
         </div>
-      </div>
 
-      {/* Mobile Sliding Menu */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-            className="md:hidden glass-panel border-t border-white/10 overflow-hidden mt-3 shadow-2xl"
-          >
-            <div className="px-5 pt-3 pb-6 space-y-2">
-              {MAIN_ROUTES.map((item, idx) => {
-                const isActive = activeSection === item.id;
-                return (
-                  <MotionLink
-                    key={item.id}
-                    initial={{ opacity: 0, x: -12 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.04, duration: 0.2 }}
-                    to={item.path}
-                    onClick={closeMenu}
-                    aria-current={isActive ? 'page' : undefined}
-                    className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-left text-sm font-medium transition-colors ${
-                      isActive
-                        ? 'bg-blue-950/70 text-blue-300 border border-blue-700/50'
-                        : 'text-slate-300 hover:bg-white/[0.04] hover:text-white'
-                    }`}
-                  >
-                    <span>{item.navLabel}</span>
-                    {isActive && <span className="w-2 h-2 rounded-full bg-blue-400" />}
-                  </MotionLink>
-                );
-              })}
+        <button
+          type="button"
+          onClick={() => setMenuOpen((open) => !open)}
+          aria-expanded={menuOpen}
+          aria-controls="mobile-menu"
+          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+          className="lg:hidden p-2 -mr-2 rounded-md text-ink hover:bg-surface focus-visible:outline-2 focus-visible:outline-brand cursor-pointer"
+        >
+          {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </button>
+      </Container>
 
-              <div className="pt-4 mt-2 border-t border-white/10 space-y-2">
-                <a
-                  href={`tel:${COMPANY_DETAILS.phone.replace(/[^0-9+]/g, '')}`}
-                  onClick={() => trackEvent('contact_click', { method: 'phone' })}
-                  className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white rounded-lg hover:bg-white/[0.04]"
-                >
-                  <Phone className="w-4 h-4 text-blue-400" />
-                  <span>Call: {COMPANY_DETAILS.phone}</span>
-                </a>
-                <a
-                  href={`mailto:${COMPANY_DETAILS.email}`}
-                  onClick={() => trackEvent('contact_click', { method: 'email' })}
-                  className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white rounded-lg hover:bg-white/[0.04]"
-                >
-                  <Mail className="w-4 h-4 text-blue-400" />
-                  <span>{COMPANY_DETAILS.email}</span>
-                </a>
-                <Link
-                  to={pathFor('contact')}
-                  onClick={closeMenu}
-                  className="block w-full mt-2 py-2.5 px-4 text-center text-xs font-semibold uppercase tracking-wider text-white bg-[#12229D] hover:bg-[#1a38c9] rounded-lg shadow-sm transition-colors cursor-pointer"
-                >
-                  Submit Project Enquiry
-                </Link>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {menuOpen && (
+        <nav id="mobile-menu" aria-label="Mobile" className="lg:hidden border-t border-line bg-white">
+          <Container className="py-4 flex flex-col gap-1">
+            {MAIN_ROUTES.map((item) => (
+              <Link
+                key={item.id}
+                to={item.path}
+                onClick={closeMenu}
+                aria-current={activeId === item.id ? 'page' : undefined}
+                className={`px-3 py-3 rounded-md text-base font-medium ${
+                  activeId === item.id ? 'bg-brand-tint text-brand' : 'text-ink hover:bg-surface'
+                }`}
+              >
+                {item.navLabel}
+              </Link>
+            ))}
+            <Button to={SPONSOR_PATH} onClick={closeMenu} className="mt-3 w-full">
+              Become a sponsor
+            </Button>
+          </Container>
+        </nav>
+      )}
     </header>
   );
 };

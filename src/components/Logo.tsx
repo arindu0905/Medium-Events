@@ -18,7 +18,7 @@ export const MediumMark: React.FC<{ size?: number; className?: string }> = ({
   return (
     <div
       style={{ width: size, height: size }}
-      className={`relative flex-shrink-0 flex items-center justify-center rounded-xl bg-[#162884] shadow-md shadow-blue-950/60 overflow-hidden group-hover:scale-105 transition-transform duration-300 ${className}`}
+      className={`relative flex-shrink-0 flex items-center justify-center rounded-lg bg-[#162884] overflow-hidden ${className}`}
     >
       <svg
         viewBox="0 0 100 100"
@@ -154,7 +154,7 @@ export const MediumWordmark: React.FC<{ light?: boolean; className?: string }> =
       </div>
 
       {/* "E V E N T S" Sub-Text precisely tracked underneath */}
-      <div className="flex justify-between items-center px-1 mt-0.5 tracking-[0.45em] text-[8.5px] sm:text-[9.5px] font-medium text-slate-300 uppercase">
+      <div className={`flex justify-between items-center px-1 mt-0.5 tracking-[0.45em] text-[8.5px] sm:text-[9.5px] font-medium uppercase ${light ? 'text-slate-300' : 'text-body'}`}>
         <span>E</span>
         <span>V</span>
         <span>E</span>

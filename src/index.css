@@ -25,13 +25,14 @@
   
   html {
     scroll-behavior: smooth;
-    color-scheme: dark;
+    color-scheme: light;
   }
 
   body {
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
     overflow-x: hidden;
-    background-color: #070b19;
+    background-color: #ffffff;
+    color: #475467;
   }
 }
 

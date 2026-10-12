@@ -3,7 +3,6 @@ import { Outlet, useLocation, useNavigate } from 'react-router';
 import { motion, AnimatePresence } from 'motion/react';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
-import { ScrollProgress } from './components/ScrollProgress';
 import { WhatsAppButton } from './components/WhatsAppButton';
 import { legacyHashToPath, routeForPath } from './routes';
 import { GA_ID } from './config';
@@ -34,11 +33,7 @@ export default function App() {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen bg-[#070b19] text-slate-100 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
-      {/* Scroll Progress Indicator */}
-      <ScrollProgress />
-
-      {/* Upgraded Sticky Navbar with Royal Blue Theme */}
+    <div className="min-h-screen bg-white text-body flex flex-col font-sans selection:bg-brand selection:text-white">
       <Navbar />
 
       <main className="flex-grow">
