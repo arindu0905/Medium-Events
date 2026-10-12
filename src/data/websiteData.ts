@@ -1,4 +1,4 @@
-import { ServiceItem, FlagshipEvent, NewsArticle, PastEvent } from '../types';
+import { ServiceItem, FlagshipEvent, NewsArticle, PastEvent, EventSeries } from '../types';
 
 export const COMPANY_DETAILS = {
   name: 'MEDIUM Events Pvt Ltd',
@@ -31,79 +31,75 @@ export const COMPANY_DETAILS = {
 export const SERVICES_DATA: ServiceItem[] = [
   {
     id: 'events',
-    title: 'Events & Turnkey Management',
-    tagline: 'Events that are more than just events',
+    title: 'Events',
+    tagline: 'Events that leave a lasting impression',
     description:
-      'We curate immersive corporate events, multi-day exhibitions, and national industry forums that go far beyond standard networking. Our mission is to leave lasting impressions and indelible eventful memories through disciplined production, staging, and VIP delegate coordination.',
+      'We plan and run conferences, industry forums, exhibitions and product launches from start to finish: venue, programme, speakers, sponsors, stage and production.',
     features: [
-      'Turnkey Expo & Conference Management',
-      'VIP Protocol & Stage Architecture',
-      'Technical Audio-Visual & Staging Integration',
-      'Sponsorship Acquisition & Stakeholder Coordination',
-      'Delegate Onboarding & Registration Systems',
-      'Event Floorplan Engineering & Booth Fabrication',
+      'Conferences, forums and workshops',
+      'Exhibitions and trade expos',
+      'Product launches and business events',
+      'Sponsor and exhibitor management',
+      'Stage, audio-visual and production',
+      'Project management on the day',
     ],
     icon: 'CalendarDays',
-    accentColor: '#E11D48',
-    stat: '6+',
-    statLabel: 'National Annual Forums & Expos',
+    accentColor: '#12229D',
+    stat: '9',
+    statLabel: 'events hosted since 2023',
   },
   {
     id: 'advertising',
-    title: 'Advertising & Marketing',
-    tagline: 'Advertising based on analytics & metrics',
+    title: 'Advertising and marketing',
+    tagline: 'Advertising based on analytics and metrics',
     description:
-      'Calculated, detailed marketing solutions tailored specifically for targeted niche markets. We construct long-term campaigns grounded in concrete performance metrics, consumer behavior analytics, and measurable revenue conversion.',
+      'Marketing for niche markets, planned around measurable results and direct revenue. For selected clients we also run long-term marketing plans.',
     features: [
-      'Analytics-Driven Media Buying & Placements',
-      'Niche Audience Targeting & Segmentation',
-      'Comprehensive Multi-Channel Marketing Plans',
-      'Conversion Rate Optimization & Performance Tracking',
-      'Campaign Brand Storytelling & Content Strategy',
-      'Cross-Platform Digital & OOH Advertising Execution',
+      'Promotional and awareness campaigns',
+      'Guerrilla marketing',
+      'Long-term marketing plans',
+      'Content creation',
+      'Campaign measurement and reporting',
     ],
     icon: 'TrendingUp',
-    accentColor: '#FB923C',
-    stat: '100%',
-    statLabel: 'Data-Backed Strategy & Reporting',
+    accentColor: '#12229D',
+    stat: '',
+    statLabel: '',
   },
   {
     id: 'design',
-    title: 'Design & Applications',
-    tagline: 'A wide range of design and application solutions',
+    title: 'Design and production',
+    tagline: 'Design, video and installation',
     description:
-      'End-to-end creative styling from brand identity systems to custom physical installations. We combine high-fidelity video production, bespoke exhibition booth design, 3D spatial planning, and large-format print executions.',
+      'Design, video production, installation and application work, from business profiles and publications to video ads and event builds.',
     features: [
-      'Commercial Video Production & Motion Graphics',
-      'Exhibition Booth Engineering & Physical Installation',
-      'Comprehensive Brand Identity & Corporate Systems',
-      '3D Environmental Staging & Spatial Renderings',
-      'Editorial, Print & Large-Format Production',
-      'Digital Asset Design & Interactive Presentation Stacks',
+      'Video ads',
+      'Business profiles',
+      'Publishing and print',
+      'Concept development',
+      'Exhibition and event installations',
     ],
     icon: 'Palette',
-    accentColor: '#E11D48',
-    stat: '360°',
-    statLabel: 'Design-to-Build Execution',
+    accentColor: '#12229D',
+    stat: '',
+    statLabel: '',
   },
   {
     id: 'consultancy',
-    title: 'Creative Consultancy',
-    tagline: 'A pinch of creative professionalism',
+    title: 'Creative consultancy',
+    tagline: 'A clear route to the right solution',
     description:
-      'Guiding brands to discover their transformative journey through our strategic vision for desirable solutions. We bring rigorous creative professionalism to position organizations ahead of evolving market dynamics in the Maldives and beyond.',
+      "We treat each client's challenge as a maze to solve: where you are, where you need to be, and the creative route between the two.",
     features: [
-      'Strategic Brand Positioning & Narrative Direction',
-      'Executive Creative Direction & Advisory',
-      'Go-To-Market Formulation for Island Markets',
-      'Market Feasibility & Industry Roadmapping',
-      'Partnership & Endorsement Ecosystem Development',
-      'Sustainable Corporate Communication Frameworks',
+      'Concept development',
+      'Brand and campaign direction',
+      'Market insight for the Maldives',
+      'Project planning',
     ],
     icon: 'Compass',
-    accentColor: '#FB923C',
-    stat: '15+',
-    statLabel: 'Years Advisory Heritage per Lead',
+    accentColor: '#12229D',
+    stat: '',
+    statLabel: '',
   },
 ];
 
@@ -430,4 +426,107 @@ export const CLIENT_PARTNERS = [
   { name: 'Maldives Publications Pvt Ltd', role: 'Publishing Partner' },
   { name: 'Indian Ocean Divers Association (IODA)', role: 'Endorsing Body' },
   { name: 'Ministry of Transport & Civil Aviation', role: 'Governmental Endorsement' },
+];
+
+// Event series MEDIUM organises. Facts from the series' Facebook events, posts and banners.
+export const EVENT_SERIES: EventSeries[] = [
+  {
+    slug: 'construction-industry-forum',
+    name: 'Construction Industry Forum',
+    shortName: 'CIF',
+    series: 'Construction Industry Forum',
+    tagline: 'High-level dialogue and business networking for the Maldives construction industry.',
+    description: [
+      'The Construction Industry Forum is an annual gathering of decision makers from the government and private sectors of the building and construction industry.',
+      'Industry leaders and key stakeholders identify the fundamental issues facing the industry, present solutions and raise awareness, to shape where Maldivian construction goes next.',
+    ],
+    website: 'https://cif.mv',
+    endorsement: 'Endorsed by MNACI',
+    audience: 'Government and private-sector decision makers in building and construction',
+    usualVenue: 'Malé and Hulhumalé',
+    usualMonth: 'August–September',
+    partners: [
+      { name: 'MNACI', role: 'Endorsing association' },
+      { name: 'Ooredoo Maldives', role: 'Exclusive Platinum Sponsor, CIF 2026' },
+    ],
+  },
+  {
+    slug: 'marine-industry-forum',
+    name: 'Maldives Marine Industry Forum',
+    shortName: 'MMIF',
+    series: 'Marine Industry Forum',
+    tagline: 'Where the Maldives marine industry meets to plan its future.',
+    description: [
+      'The Maldives Marine Industry Forum is an annual gathering of decision makers from the government and private sectors of the marine industry.',
+      'Industry leaders and key stakeholders identify the fundamental issues facing the marine industry, present solutions and raise awareness.',
+    ],
+    website: 'https://mmif.mv',
+    audience: 'Marine industry leaders from government and the private sector',
+    usualVenue: 'JEN Malé Maldives by Shangri-La',
+    usualMonth: 'May–July',
+    partners: [],
+  },
+  {
+    slug: 'aviation-forum',
+    name: 'Aviation Forum – Connecting Maldives',
+    shortName: 'Aviation Forum',
+    series: 'Aviation Forum',
+    tagline: 'Reshaping the aviation industry of the Maldives through stakeholder dialogue.',
+    description: [
+      "The Aviation Forum brings together the Maldives' most influential aviation leaders, uniting senior government officials and private-sector pioneers.",
+      'Its purpose is practical: to agree actionable solutions and set the strategic direction of Maldivian aviation.',
+    ],
+    website: 'https://aviationforum.mv',
+    audience: 'Government officials and private-sector aviation leaders',
+    usualVenue: 'JEN Malé Maldives by Shangri-La',
+    usualMonth: 'April–May',
+    partners: [{ name: 'SITA', role: 'Sponsor, Aviation Forum 2026' }],
+  },
+  {
+    slug: 'build-expo',
+    name: 'Build Expo',
+    shortName: 'Build Expo',
+    series: 'Build Expo',
+    tagline: 'The official exhibition of the Maldives National Association of Construction Industry.',
+    description: [
+      'Build Expo is a four-day exhibition at Central Park, Hulhumalé, with an exhibition and equipment display area, stage activities, networking sessions, product launches and entertainment.',
+      'It is a place to meet prospective customers and gain recognition across the construction industry.',
+    ],
+    endorsement: 'Official exhibition of MNACI',
+    audience: 'Contractors, suppliers, developers and the public',
+    usualVenue: 'Central Park, Hulhumalé',
+    usualMonth: 'April',
+    partners: [{ name: 'MNACI', role: 'Official exhibition partner' }],
+    ctaSecondary: 'Book a stand',
+  },
+];
+
+export function editionsFor(series: PastEvent['series']): PastEvent[] {
+  return PAST_EVENTS_DATA.filter((e) => e.series === series).sort((a, b) => b.isoDate.localeCompare(a.isoDate));
+}
+
+export function seriesBySlug(slug: string): EventSeries | undefined {
+  return EVENT_SERIES.find((s) => s.slug === slug);
+}
+
+export const VERIFIED_PARTNERS = [
+  { name: 'MNACI', role: 'Endorsing association, CIF and Build Expo' },
+  { name: 'Ooredoo Maldives', role: 'Exclusive Platinum Sponsor, CIF 2026' },
+  { name: 'SITA', role: 'Sponsor, Aviation Forum 2026' },
+];
+
+const firstEventYear = PAST_EVENTS_DATA.map((e) => e.isoDate.slice(0, 4)).sort()[0];
+
+export const SITE_STATS = [
+  { value: String(PAST_EVENTS_DATA.length), label: 'events hosted' },
+  { value: String(EVENT_SERIES.length), label: 'event series' },
+  { value: firstEventYear, label: 'first forum' },
+  { value: '60+', label: 'years combined experience' },
+];
+
+// Enquiry types offered by the contact form; ids are used in /contact?service=<id>
+export const SERVICE_OPTIONS = [
+  { id: 'sponsorship', label: 'Sponsorship or exhibition stand' },
+  ...SERVICES_DATA.map((service) => ({ id: service.id, label: service.title })),
+  { id: 'general', label: 'General enquiry' },
 ];

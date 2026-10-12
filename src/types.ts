@@ -62,3 +62,19 @@ export interface EnquirySubmission {
   message: string;
   event?: string;
 }
+
+export interface EventSeries {
+  slug: string;
+  name: string;
+  shortName: string;
+  series: PastEvent['series'];
+  tagline: string;
+  description: string[];
+  website?: string;
+  endorsement?: string;
+  audience: string;
+  usualVenue: string;
+  usualMonth: string;
+  partners: { name: string; role: string }[];
+  ctaSecondary?: string;
+}
