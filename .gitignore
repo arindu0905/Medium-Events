@@ -8,3 +8,6 @@ coverage/
 !.env.example
 dist-ssr/
 .superpowers/
+supabase/.env.local
+supabase/.temp/
+admin/dist/

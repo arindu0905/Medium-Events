@@ -23,5 +23,7 @@
     },
     "allowImportingTsExtensions": true,
     "noEmit": true
-  }
+  },
+  "include": ["src", "scripts", "vite.config.ts", "vitest.config.ts"],
+  "exclude": ["admin", "supabase", "dist", "dist-ssr"]
 }
