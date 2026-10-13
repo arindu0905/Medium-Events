@@ -17,11 +17,13 @@ export async function recordActivity(
   ]);
 }
 
-// { field: { old, new } } for the fields that actually changed
+// { field: { old, new } } for the fields that actually changed (lists and objects compared by value)
+const same = (a: unknown, b: unknown) => a === b || JSON.stringify(a) === JSON.stringify(b);
+
 export function diff<T extends Record<string, unknown>>(before: T, patch: Partial<T>) {
   const changes: Record<string, { old: unknown; new: unknown }> = {};
   for (const [key, value] of Object.entries(patch)) {
-    if (value !== undefined && before[key] !== value) changes[key] = { old: before[key], new: value };
+    if (value !== undefined && !same(before[key], value)) changes[key] = { old: before[key], new: value };
   }
   return changes;
 }

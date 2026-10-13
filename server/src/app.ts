@@ -4,6 +4,8 @@ import { requireAuth } from './auth/middleware.js';
 import { authRoutes, publicAuthRoutes } from './auth/routes.js';
 import { staffRoutes } from './staff/routes.js';
 import { activityRoutes } from './activity/routes.js';
+import { fileRoutes } from './files/routes.js';
+import { eventRoutes } from './events/routes.js';
 import { HttpError } from './http.js';
 
 export interface AppContext {
@@ -30,6 +32,11 @@ export function createApp(opts: { db: Db; now?: () => Date }) {
   app.use('/api/auth', authRoutes(ctx));
   app.use('/api/staff', staffRoutes(ctx));
   app.use('/api/activity', activityRoutes(ctx));
+  app.use('/api/files', fileRoutes(ctx));
+  const events = eventRoutes(ctx);
+  app.use('/api/series', events.series);
+  app.use('/api/editions', events.editions);
+  app.use('/api/partners', events.partners);
 
   app.use('/api', (_req, res) => {
     res.status(404).json({ error: 'Not found.' });

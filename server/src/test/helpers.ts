@@ -54,3 +54,19 @@ export async function signedIn(app: Parameters<typeof request.agent>[0], email: 
   if (res.status !== 200) throw new Error(`login failed for ${email}: ${res.status} ${JSON.stringify(res.body)}`);
   return agent;
 }
+
+export const ROLE_LIST: Role[] = ['admin', 'sales', 'events', 'finance'];
+
+// One signed-in agent per role (admin@medium.mv, sales@medium.mv, …) plus their user ids
+export async function signedInAsEveryRole(t: Awaited<ReturnType<typeof setup>>) {
+  const ids = {} as Record<Role, string>;
+  const as = {} as Record<Role, Awaited<ReturnType<typeof signedIn>>>;
+  for (const role of ROLE_LIST) {
+    ids[role] = (await createUser(t.db, { role, email: `${role}@medium.mv`, full_name: `Test ${role}` })).id;
+    as[role] = await signedIn(t.app, `${role}@medium.mv`);
+  }
+  return { ids, as };
+}
+
+// Smallest valid JPEG-typed body for upload tests (content is not decoded by the server)
+export const JPEG = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01, 0xff, 0xd9]);
