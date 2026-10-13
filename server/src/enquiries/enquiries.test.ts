@@ -1,6 +1,6 @@
 import request from 'supertest';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { setup, signedInAsEveryRole } from '../test/helpers.js';
+import { createUser, setup, signedInAsEveryRole } from '../test/helpers.js';
 
 let t: Awaited<ReturnType<typeof setup>>;
 let s: Awaited<ReturnType<typeof signedInAsEveryRole>>;
@@ -104,12 +104,20 @@ describe('enquiries in the admin', () => {
     expect(log.changes).toEqual({ status: { old: 'new', new: 'contacted' }, assignee_id: { old: null, new: s.ids.sales } });
   });
 
+  it('only assigns enquiries to people who handle them (admin and sales)', async () => {
+    const { id } = await createManual();
+    const res = await s.as.sales.patch(`/api/enquiries/${id}`).send({ assignee_id: s.ids.events });
+    expect(res.status).toBe(400);
+    expect(res.body.fields.assignee_id).toBe('Choose an active admin or member of the sales team.');
+    expect((await s.as.sales.patch(`/api/enquiries/${id}`).send({ assignee_id: s.ids.admin })).status).toBe(200);
+  });
+
   it('only assigns enquiries to active staff', async () => {
     const { id } = await createManual();
-    await s.as.admin.patch(`/api/staff/${s.ids.finance}`).send({ active: false });
-    const res = await s.as.sales.patch(`/api/enquiries/${id}`).send({ assignee_id: s.ids.finance });
+    const other = await createUser(t.db, { role: 'sales', email: 'gone@medium.mv', active: false });
+    const res = await s.as.sales.patch(`/api/enquiries/${id}`).send({ assignee_id: other.id });
     expect(res.status).toBe(400);
-    expect(res.body.fields.assignee_id).toBe('Choose an active member of staff.');
+    expect(res.body.fields.assignee_id).toBe('Choose an active admin or member of the sales team.');
   });
 
   it('filters by status, source, assignee, search text and Maldives dates', async () => {

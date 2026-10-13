@@ -7,6 +7,9 @@ import { currentUser, requirePermission } from '../auth/middleware.js';
 import { insertRow, pageOf, updateRow } from '../crud.js';
 import { isUuid } from '../files/routes.js';
 import { HttpError, route, validationError } from '../http.js';
+import { PERMISSIONS } from '../permissions.js';
+
+const ASSIGNEE_MESSAGE = 'Choose an active admin or member of the sales team.';
 
 export const SOURCES = ['website', 'whatsapp', 'phone', 'email', 'walk_in', 'other'] as const;
 export const STATUSES = ['new', 'contacted', 'proposal_sent', 'won', 'lost'] as const;
@@ -29,7 +32,7 @@ const fields = {
   message: text,
   source: z.enum(SOURCES, { message: 'Choose where the enquiry came from.' }),
   status: z.enum(STATUSES, { message: 'Choose a status.' }),
-  assignee_id: id('Choose an active member of staff.'),
+  assignee_id: id(ASSIGNEE_MESSAGE),
   edition_id: id('Choose an edition.'),
 };
 const patchBody = z.object(fields).partial();
@@ -70,8 +73,10 @@ export function enquiryFilters(query: unknown) {
 }
 
 async function assertRefs(tx: Db, e: { assignee_id?: string | null; edition_id?: string | null }) {
-  if (e.assignee_id && !(await tx.query('select 1 from users where id = $1 and active', [e.assignee_id])).length) {
-    throw new HttpError(400, 'Check the highlighted fields.', { assignee_id: 'Choose an active member of staff.' });
+  // Only people who can open enquiries can be given one
+  const handlers = PERMISSIONS['enquiries.access'] as string[];
+  if (e.assignee_id && !(await tx.query('select 1 from users where id = $1 and active and role = any($2)', [e.assignee_id, handlers])).length) {
+    throw new HttpError(400, 'Check the highlighted fields.', { assignee_id: ASSIGNEE_MESSAGE });
   }
   if (e.edition_id && !(await tx.query('select 1 from editions where id = $1', [e.edition_id])).length) {
     throw new HttpError(400, 'Check the highlighted fields.', { edition_id: 'Choose an edition.' });

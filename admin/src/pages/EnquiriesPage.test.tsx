@@ -16,12 +16,13 @@ vi.mock('../lib/api', async (importOriginal) => ({
 
 const sales = makeUser({ id: 'u-sales', role: 'sales', full_name: 'Sam Sales', email: 'sam@medium.test' });
 const admin = makeUser();
+const fay = makeUser({ id: 'u-fay', role: 'finance', full_name: 'Fay Finance', email: 'fay@medium.test' });
 const mariyam = makeEnquiry();
 const hassan = makeEnquiry({ id: 'q-2', full_name: 'Hassan Rasheed', company: '', email: '', phone: '+960 999 0000', source: 'phone', status: 'contacted', created_at: '2026-10-11T04:30:00Z' });
 
 function renderAs(role: StaffRole, url: string) {
   const me = role === 'sales' ? sales : makeUser({ id: `u-${role}`, role, email: `${role}@medium.test` });
-  holder.fake = createFakeApi({ users: [me, admin], signedInAs: me.id, enquiries: [mariyam, hassan] });
+  holder.fake = createFakeApi({ users: [me, admin, fay], signedInAs: me.id, enquiries: [mariyam, hassan] });
   render(
     <MemoryRouter initialEntries={[url]}>
       <AdminRoutes />
@@ -99,6 +100,13 @@ describe('Enquiry detail', () => {
       expect(holder.fake.state.calls).toContainEqual({ method: 'PATCH', path: '/enquiries/q-1', body: { status: 'proposal_sent', assignee_id: 'u-admin' } }),
     );
     expect(await screen.findByText('Saved.')).toBeTruthy();
+  });
+
+  it('only offers people who handle enquiries as assignees', async () => {
+    renderAs('sales', '/enquiries/q-1');
+    await screen.findByRole('option', { name: 'Aisha Admin' });
+    const options = [...(screen.getByLabelText('Assigned to') as HTMLSelectElement).options].map((o) => o.textContent);
+    expect(options).toEqual(['Nobody yet', 'Sam Sales', 'Aisha Admin']);
   });
 
   it('adds a note with author and time', async () => {

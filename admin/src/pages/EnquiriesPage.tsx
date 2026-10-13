@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { Plus } from 'lucide-react';
 import { listEnquiries, PAGE_SIZE, SOURCE_LABELS, STATUS_LABELS, type EnquiryFilters } from '../lib/enquiries';
 import { listStaff } from '../lib/staff';
+import { can } from '../lib/permissions';
 import { formatWhen } from '../lib/dates';
 import { useLoad } from '../lib/useLoad';
 import { FIELD, LINK, Loading, PageHeader, PRIMARY, SECONDARY, TABLE_WRAP, TD, TH } from '../components/ui';
@@ -46,15 +47,15 @@ export default function EnquiriesPage() {
         </Link>
       </PageHeader>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="sm:col-span-2">
           <label htmlFor="f-q" className="block text-sm font-semibold text-ink mb-1.5">Search</label>
           <input id="f-q" type="search" placeholder="Name, company, email or phone" value={filters.q ?? ''} onChange={(e) => setFilter({ q: e.target.value || undefined })} className={FIELD} />
         </div>
         {select('f-status', 'Status', 'status', Object.entries(STATUS_LABELS), 'All statuses')}
         {select('f-source', 'Source', 'source', Object.entries(SOURCE_LABELS), 'All sources')}
-        {select('f-assignee', 'Assigned to', 'assignee', (staff ?? []).map((p) => [p.id, p.full_name]), 'Anyone')}
-        <div className="grid grid-cols-2 gap-2">
+        {select('f-assignee', 'Assigned to', 'assignee', (staff ?? []).filter((p) => can(p.role, 'enquiries.access')).map((p) => [p.id, p.full_name]), 'Anyone')}
+        <div className="grid grid-cols-2 gap-2 lg:col-span-2">
           <div>
             <label htmlFor="f-from" className="block text-sm font-semibold text-ink mb-1.5">From</label>
             <input id="f-from" type="date" value={filters.from ?? ''} onChange={(e) => setFilter({ from: e.target.value || undefined })} className={FIELD} />

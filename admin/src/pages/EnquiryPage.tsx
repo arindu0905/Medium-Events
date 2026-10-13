@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { addNote, getEnquiry, saveEnquiry, SOURCE_LABELS, STATUS_LABELS, type EnquiryInput } from '../lib/enquiries';
 import { listStaff } from '../lib/staff';
+import { can } from '../lib/permissions';
 import { formatWhen } from '../lib/dates';
 import { useLoad } from '../lib/useLoad';
 import type { EnquirySource, EnquiryStatus } from '../lib/types';
@@ -123,8 +124,8 @@ function EnquiryDetail({ id }: { id: string }) {
     ['Budget', enquiry.budget],
     ['Received', `${formatWhen(enquiry.created_at)} · ${SOURCE_LABELS[enquiry.source]}`],
   ];
-  // Anyone already assigned stays selectable even if since deactivated
-  const assignable = (staff ?? []).filter((p) => p.active || p.id === enquiry.assignee_id);
+  // Active admins and sales staff (the people who can open enquiries); whoever is already assigned stays selectable
+  const assignable = (staff ?? []).filter((p) => (p.active && can(p.role, 'enquiries.access')) || p.id === enquiry.assignee_id);
 
   return (
     <section className="max-w-4xl">
