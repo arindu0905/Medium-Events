@@ -151,7 +151,7 @@ export default function StaffPage() {
                         disabled={isMe}
                         title={isMe ? SELF_TITLE : undefined}
                         onChange={(e) => save(person, { role: e.target.value as StaffRole })}
-                        className={`${FIELD} max-w-[140px]`}
+                        className={`${FIELD} min-w-[110px] max-w-[140px]`}
                       >
                         {ROLES.map((role) => (
                           <option key={role} value={role}>

@@ -26,7 +26,7 @@ export async function listActivity(f: ActivityFilters): Promise<{ rows: Activity
   }
 }
 
-const ENTITY_LABELS: Record<string, string> = { users: 'Staff' };
+const ENTITY_LABELS: Record<string, string> = { users: 'Staff', session: 'Sign-in' };
 export const ACTION_LABELS: Record<ActivityRow['action'], string> = {
   create: 'Created',
   update: 'Updated',

@@ -61,7 +61,7 @@ export const Layout: React.FC = () => {
           >
             {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
-          <span className="lg:hidden font-semibold text-ink">MEDIUM Admin</span>
+          <span className="lg:hidden font-semibold text-ink whitespace-nowrap">MEDIUM Admin</span>
           <div className="ml-auto flex items-center gap-3 text-sm">
             <span className="hidden sm:inline font-medium text-ink">{user?.full_name}</span>
             {role && (
@@ -70,7 +70,7 @@ export const Layout: React.FC = () => {
             <button
               type="button"
               onClick={signOut}
-              className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 font-semibold text-body hover:text-ink hover:bg-surface focus-visible:outline-2 focus-visible:outline-brand cursor-pointer"
+              className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-md px-2.5 py-1.5 font-semibold text-body hover:text-ink hover:bg-surface focus-visible:outline-2 focus-visible:outline-brand cursor-pointer"
             >
               <LogOut className="w-4 h-4" aria-hidden="true" />
               Sign out
