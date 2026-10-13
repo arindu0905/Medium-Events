@@ -10,6 +10,8 @@ import { publishRoutes } from './publish/routes.js';
 import { publicRoutes } from './public/routes.js';
 import { enquiryRoutes } from './enquiries/routes.js';
 import { salesRoutes } from './sales/routes.js';
+import { reportRoutes } from './reports/routes.js';
+import { dashboardRoutes } from './dashboard/routes.js';
 import { HttpError } from './http.js';
 
 export interface AppContext {
@@ -58,6 +60,8 @@ export function createApp(opts: { db: Db; now?: () => Date; fetch?: typeof fetch
   app.use('/api/sponsors', sales.sponsors);
   app.use('/api/deals', sales.deals);
   app.use('/api/payments', sales.payments);
+  app.use('/api/reports', reportRoutes(ctx));
+  app.use('/api/dashboard', dashboardRoutes(ctx));
 
   app.use('/api', (_req, res) => {
     res.status(404).json({ error: 'Not found.' });
