@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  recordEnquiry,
   buildMailtoUrl,
   buildWhatsAppUrl,
   enquirySubject,
@@ -109,5 +110,33 @@ describe('contact links', () => {
       expect(text).toContain(value);
     }
     expect(text).not.toContain('Budget');
+  });
+});
+
+describe('recordEnquiry', () => {
+  it('posts the enquiry to the MEDIUM admin server', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(new Response('{"ok":true}', { status: 201 }));
+    expect(await recordEnquiry(data, 'https://admin.medium.mv', fetchImpl)).toBe(true);
+    const [url, init] = fetchImpl.mock.calls[0];
+    expect(url).toBe('https://admin.medium.mv/api/public/enquiries');
+    expect(init.method).toBe('POST');
+    expect(init.keepalive).toBe(true);
+    expect(JSON.parse(init.body)).toEqual({
+      name: data.fullName,
+      company: data.company,
+      email: data.email,
+      phone: data.phone,
+      service: data.service,
+      event: data.event ?? '',
+      timeline: data.timeline,
+      budget: data.budget ?? '',
+      message: data.message,
+      botcheck: '',
+    });
+  });
+
+  it('never throws when the server is down or refuses', async () => {
+    expect(await recordEnquiry(data, 'https://admin.medium.mv', vi.fn().mockRejectedValue(new TypeError('Failed')))).toBe(false);
+    expect(await recordEnquiry(data, 'https://admin.medium.mv', vi.fn().mockResolvedValue(new Response('{}', { status: 429 })))).toBe(false);
   });
 });

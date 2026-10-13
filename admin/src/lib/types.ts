@@ -95,3 +95,35 @@ export interface PublishInfo {
   series: number;
   events: number;
 }
+
+// ---- enquiries (server/src/enquiries/routes.ts) ----
+export type EnquirySource = 'website' | 'whatsapp' | 'phone' | 'email' | 'walk_in' | 'other';
+export type EnquiryStatus = 'new' | 'contacted' | 'proposal_sent' | 'won' | 'lost';
+
+export interface Enquiry {
+  id: string;
+  created_at: string;
+  full_name: string;
+  company: string;
+  email: string;
+  phone: string;
+  service: string;
+  event: string;
+  timeline: string;
+  budget: string;
+  message: string;
+  source: EnquirySource;
+  status: EnquiryStatus;
+  assignee_id: string | null;
+  assignee_name: string | null;
+  edition_id: string | null;
+  edition_name: string | null;
+  latest_note: string | null;
+}
+
+export interface EnquiryNote {
+  id: string;
+  author_name: string | null;
+  body: string;
+  created_at: string;
+}

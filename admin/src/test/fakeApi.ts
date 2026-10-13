@@ -1,8 +1,10 @@
 // In-memory stand-in for the MEDIUM server's API, used by component tests.
-// Mirrors the server's rules closely enough for the UI: sign-in, forced password change, staff, activity.
+// Mirrors the server's rules closely enough for the UI: sign-in, forced password change, staff, activity,
+// plus each section's handlers (fakeEvents, fakeEnquiries, …).
 import { ApiError, reportApiError } from '../lib/api';
 import type { ActivityRow, Edition, Partner, PublishInfo, Series, StaffMember, StaffRole } from '../lib/types';
 import { NOT_HANDLED, handleEvents } from './fakeEvents';
+import { handleEnquiries, type FakeEnquiry } from './fakeEnquiries';
 
 export interface FakeUser extends Required<Omit<StaffMember, 'last_login_at' | 'created_at'>> {
   password: string;
@@ -31,6 +33,7 @@ export function createFakeApi(
     editions?: Edition[];
     partners?: Partner[];
     published?: PublishInfo | null;
+    enquiries?: FakeEnquiry[];
   } = {},
 ) {
   const state = {
@@ -43,6 +46,7 @@ export function createFakeApi(
     partners: (init.partners ?? []).map((x) => ({ ...x })),
     files: [] as { id: string; filename: string; type: string }[],
     published: init.published ?? null,
+    enquiries: (init.enquiries ?? []).map((x) => ({ ...x, notes: [...x.notes] })),
     calls: [] as { method: string; path: string; body?: unknown }[],
     // Set to make the next matching call fail
     failNext: null as null | { status: number; error: string },
@@ -128,6 +132,9 @@ export function createFakeApi(
     }
     const events = handleEvents(state, user.role, method, route, new URLSearchParams(query), body, fail, nextId);
     if (events !== NOT_HANDLED) return events;
+    const staffName = (id: string | null) => state.users.find((u) => u.id === id)?.full_name ?? null;
+    const enquiries = handleEnquiries(state, user, staffName, method, route, new URLSearchParams(query), body, fail, nextId);
+    if (enquiries !== NOT_HANDLED) return enquiries;
     return fail(404, 'Not found.');
   }
 

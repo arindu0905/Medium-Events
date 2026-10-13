@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router';
-import { Activity, CalendarDays, CircleUser, LayoutDashboard, LogOut, Menu, Send, Users, X } from 'lucide-react';
+import { Activity, CalendarDays, CircleUser, Inbox, LayoutDashboard, LogOut, Menu, Send, Users, X } from 'lucide-react';
 import { useAuth } from '../lib/auth';
 import { navFor, type SectionId } from '../lib/permissions';
 import { ROLE_LABELS } from '../lib/types';
@@ -9,6 +9,7 @@ const ICONS: Record<SectionId, React.FC<{ className?: string }>> = {
   dashboard: LayoutDashboard,
   events: CalendarDays,
   publish: Send,
+  enquiries: Inbox,
   staff: Users,
   activity: Activity,
   account: CircleUser,

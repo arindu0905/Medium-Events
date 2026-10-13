@@ -7,11 +7,14 @@ import { trackEvent } from '../lib/analytics';
 
 vi.mock('../lib/analytics', () => ({ trackEvent: vi.fn() }));
 
-const mockConfig = vi.hoisted(() => ({ key: undefined as string | undefined }));
+const mockConfig = vi.hoisted(() => ({ key: undefined as string | undefined, adminApi: undefined as string | undefined }));
 vi.mock('../config', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../config')>()),
   get WEB3FORMS_KEY() {
     return mockConfig.key;
+  },
+  get ADMIN_API_URL() {
+    return mockConfig.adminApi;
   },
 }));
 
@@ -34,6 +37,7 @@ function fillRequired() {
 
 beforeEach(() => {
   mockConfig.key = undefined;
+  mockConfig.adminApi = undefined;
   vi.mocked(trackEvent).mockClear();
 });
 
@@ -99,6 +103,58 @@ describe('EnquiryForm with a Web3Forms key', () => {
       'We would like a booth at Build Expo.',
     );
     expect(trackEvent).not.toHaveBeenCalledWith('generate_lead', expect.anything());
+  });
+});
+
+describe('EnquiryForm recording enquiries in the MEDIUM admin', () => {
+  const adminCalls = (fetch: ReturnType<typeof vi.fn>) => fetch.mock.calls.filter(([url]) => String(url).startsWith('https://admin.medium.mv'));
+
+  it('records the enquiry as well as sending it by email', async () => {
+    mockConfig.key = 'TEST-KEY';
+    mockConfig.adminApi = 'https://admin.medium.mv';
+    const fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({ success: true })));
+    vi.stubGlobal('fetch', fetch);
+    renderForm();
+    fillRequired();
+    fireEvent.click(screen.getByRole('button', { name: /Send enquiry/i }));
+    expect(await screen.findByText('Thanks, Aisha. MEDIUM will be in touch within 1 business day.')).toBeTruthy();
+    expect(adminCalls(fetch)).toHaveLength(1);
+    expect(JSON.parse(adminCalls(fetch)[0][1].body)).toEqual(expect.objectContaining({ name: 'Aisha', email: 'aisha@co.mv', phone: '7771234' }));
+  });
+
+  it('records the enquiry when it goes out over WhatsApp', () => {
+    mockConfig.adminApi = 'https://admin.medium.mv';
+    const fetch = vi.fn().mockResolvedValue(new Response('{}', { status: 201 }));
+    vi.stubGlobal('fetch', fetch);
+    vi.stubGlobal('open', vi.fn());
+    renderForm();
+    fillRequired();
+    fireEvent.click(screen.getByRole('button', { name: /Send via WhatsApp/ }));
+    expect(adminCalls(fetch)).toHaveLength(1);
+  });
+
+  it('still confirms to the visitor when the admin server is down', async () => {
+    mockConfig.key = 'TEST-KEY';
+    mockConfig.adminApi = 'https://admin.medium.mv';
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((url: string) => (url.startsWith('https://admin.medium.mv') ? Promise.reject(new TypeError('down')) : Promise.resolve(new Response(JSON.stringify({ success: true }))))),
+    );
+    renderForm();
+    fillRequired();
+    fireEvent.click(screen.getByRole('button', { name: /Send enquiry/i }));
+    expect(await screen.findByText('Thanks, Aisha. MEDIUM will be in touch within 1 business day.')).toBeTruthy();
+  });
+
+  it('does not contact an admin server when none is configured', async () => {
+    mockConfig.key = 'TEST-KEY';
+    const fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({ success: true })));
+    vi.stubGlobal('fetch', fetch);
+    renderForm();
+    fillRequired();
+    fireEvent.click(screen.getByRole('button', { name: /Send enquiry/i }));
+    await screen.findByText('Thanks, Aisha. MEDIUM will be in touch within 1 business day.');
+    expect(fetch).toHaveBeenCalledTimes(1);
   });
 });
 

@@ -53,6 +53,33 @@ export async function submitEnquiry(
   }
 }
 
+// Also records the enquiry in the MEDIUM admin (Enquiries), when VITE_ADMIN_API_URL is set.
+// Best effort: it never throws, and the visitor's experience never depends on it.
+export async function recordEnquiry(data: EnquirySubmission, apiUrl: string, fetchImpl: typeof fetch = fetch): Promise<boolean> {
+  try {
+    const response = await fetchImpl(`${apiUrl}/api/public/enquiries`, {
+      method: 'POST',
+      keepalive: true,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: data.fullName,
+        company: data.company,
+        email: data.email,
+        phone: data.phone,
+        service: data.service,
+        event: data.event ?? '',
+        timeline: data.timeline,
+        budget: data.budget ?? '',
+        message: data.message,
+        botcheck: '',
+      }),
+    });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
 export function formatEnquiryText(data: EnquirySubmission): string {
   const lines: [string, string | undefined][] = [
     ['Name', data.fullName],

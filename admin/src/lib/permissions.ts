@@ -6,12 +6,13 @@ import type { StaffRole } from './types';
 export type { Permission };
 export const can = (role: StaffRole | null | undefined, permission: Permission) => !!role && serverCan(role, permission);
 
-export type SectionId = 'dashboard' | 'events' | 'publish' | 'staff' | 'activity' | 'account';
+export type SectionId = 'dashboard' | 'events' | 'publish' | 'enquiries' | 'staff' | 'activity' | 'account';
 
 export const NAV_ITEMS: { id: SectionId; label: string; path: string; permission: Permission | null }[] = [
   { id: 'dashboard', label: 'Dashboard', path: '/', permission: null },
   { id: 'events', label: 'Events', path: '/events', permission: 'events.read' },
   { id: 'publish', label: 'Publish', path: '/publish', permission: 'events.publish' },
+  { id: 'enquiries', label: 'Enquiries', path: '/enquiries', permission: 'enquiries.access' },
   { id: 'staff', label: 'Staff', path: '/staff', permission: 'staff.write' },
   { id: 'activity', label: 'Activity log', path: '/activity', permission: null },
   { id: 'account', label: 'My account', path: '/account', permission: null },

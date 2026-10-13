@@ -43,9 +43,9 @@ describe('permissions', () => {
 
 describe('Layout', () => {
   it.each([
-    ['admin', ['Dashboard', 'Events', 'Publish', 'Staff', 'Activity log', 'My account']],
+    ['admin', ['Dashboard', 'Events', 'Publish', 'Enquiries', 'Staff', 'Activity log', 'My account']],
     ['events', ['Dashboard', 'Events', 'Publish', 'Activity log', 'My account']],
-    ['sales', ['Dashboard', 'Events', 'Activity log', 'My account']],
+    ['sales', ['Dashboard', 'Events', 'Enquiries', 'Activity log', 'My account']],
     ['finance', ['Dashboard', 'Events', 'Activity log', 'My account']],
   ] as [StaffRole, string[]][])('gives %s the right sections', async (role, labels) => {
     renderAs(role);

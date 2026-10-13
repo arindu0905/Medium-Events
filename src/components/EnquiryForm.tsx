@@ -3,9 +3,9 @@ import { useSearchParams } from 'react-router';
 import { AlertCircle, CheckCircle2, Clock, Loader2, Mail, MapPin, MessageCircle, Phone, Send } from 'lucide-react';
 import { COMPANY_DETAILS, SERVICE_OPTIONS } from '../data/websiteData';
 import { EnquirySubmission } from '../types';
-import { WEB3FORMS_KEY } from '../config';
+import { ADMIN_API_URL, WEB3FORMS_KEY } from '../config';
 import { trackEvent } from '../lib/analytics';
-import { buildMailtoUrl, buildWhatsAppUrl, enquirySubject, formatEnquiryText, submitEnquiry } from '../lib/enquiry';
+import { buildMailtoUrl, buildWhatsAppUrl, enquirySubject, formatEnquiryText, recordEnquiry, submitEnquiry } from '../lib/enquiry';
 import { Button, Container } from './ui';
 
 type SendState = 'idle' | 'sending' | 'sent' | 'failed';
@@ -82,6 +82,9 @@ export const EnquiryForm: React.FC = () => {
       setSendState('sent');
       return;
     }
+
+    // Every enquiry also lands in the MEDIUM admin (if configured), whichever way it is sent
+    if (ADMIN_API_URL) void recordEnquiry(formData, ADMIN_API_URL);
 
     // Until MEDIUM's Web3Forms key is configured, enquiries go out over WhatsApp instead
     if (!WEB3FORMS_KEY) {
