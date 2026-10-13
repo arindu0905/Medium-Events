@@ -5,7 +5,7 @@ import { recordActivity } from '../activity.js';
 import { Lockout } from './lockout.js';
 import { currentUser } from './middleware.js';
 import { MIN_PASSWORD_LENGTH, hashPassword, verifyAgainstDummy, verifyPassword } from './passwords.js';
-import { COOKIE_NAME, IDLE_MS, createSession, deleteSession, deleteUserSessions } from './sessions.js';
+import { COOKIE_NAME, MAX_MS, createSession, deleteSession, deleteUserSessions } from './sessions.js';
 
 const INCORRECT = 'Email or password is incorrect.';
 
@@ -46,7 +46,8 @@ export function publicAuthRoutes(ctx: AppContext) {
         sameSite: 'lax',
         secure: process.env.NODE_ENV === 'production',
         path: '/',
-        maxAge: IDLE_MS,
+        // The server ends sessions after 8 idle hours; the cookie itself lasts the 30-day maximum
+        maxAge: MAX_MS,
       });
       res.json({ ok: true });
     } catch (e) {

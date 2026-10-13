@@ -47,6 +47,8 @@ describe('login', () => {
     expect(cookie).toMatch(/^medium_session=[A-Za-z0-9_-]{43};/);
     expect(cookie).toMatch(/HttpOnly/);
     expect(cookie).toMatch(/SameSite=Lax/);
+    // The browser keeps the cookie for the 30-day maximum; the server ends idle sessions after 8 hours
+    expect(cookie).toMatch(/Max-Age=2592000;/);
     const log = await t.db.query('select actor_id, action from activity_log');
     expect(log).toEqual([{ actor_id: user.id, action: 'login' }]);
   });
