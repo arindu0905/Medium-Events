@@ -26,6 +26,8 @@ export function reportApiError(error: ApiError) {
   listeners.forEach((listener) => listener(error));
 }
 
+const UNREACHABLE = "Can't reach the MEDIUM server. Check it's running and try again.";
+
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   let res: Response;
   try {
@@ -36,10 +38,12 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
       body: body === undefined ? undefined : JSON.stringify(body),
     });
   } catch {
-    throw new ApiError(0, "Can't reach the MEDIUM server. Check it's running and try again.");
+    throw new ApiError(0, UNREACHABLE);
   }
   if (res.status === 204) return undefined as T;
   const data = await res.json().catch(() => ({}));
+  // The server always sends { error } with its failures; a bare 5xx comes from a proxy that couldn't reach it
+  if (res.status >= 500 && !data.error) throw new ApiError(0, UNREACHABLE);
   if (!res.ok) {
     const error = new ApiError(res.status, data.error ?? 'Something went wrong. Try again.', data.fields);
     reportApiError(error);
