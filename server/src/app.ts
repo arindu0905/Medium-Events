@@ -3,6 +3,7 @@ import type { Db } from './db/index.js';
 import { requireAuth } from './auth/middleware.js';
 import { authRoutes, publicAuthRoutes } from './auth/routes.js';
 import { staffRoutes } from './staff/routes.js';
+import { activityRoutes } from './activity/routes.js';
 import { HttpError } from './http.js';
 
 export interface AppContext {
@@ -28,6 +29,7 @@ export function createApp(opts: { db: Db; now?: () => Date }) {
   app.use('/api', requireAuth(ctx));
   app.use('/api/auth', authRoutes(ctx));
   app.use('/api/staff', staffRoutes(ctx));
+  app.use('/api/activity', activityRoutes(ctx));
 
   app.use('/api', (_req, res) => {
     res.status(404).json({ error: 'Not found.' });
