@@ -50,3 +50,44 @@ Pages are listed once in `src/routes.ts`. Adding a page there adds it to the rou
 4. **Social previews:** paste each page URL into the [Facebook Sharing Debugger](https://developers.facebook.com/tools/debug/) to confirm the preview image and text.
 
 The WhatsApp number is set once in `src/data/websiteData.ts` (`COMPANY_DETAILS.whatsapp`).
+
+## Admin backend
+
+Staff manage the business from the admin app (`admin/`), which talks to the MEDIUM server (`server/`). The server holds all the data and does all the sign-in and permission checks. Supabase, if used, is only the database: no Supabase accounts, emails or keys in the apps.
+
+### Run it locally
+
+In two terminals:
+
+```bash
+npm --prefix server install
+npm --prefix server run dev
+```
+
+```bash
+npm --prefix admin install
+npm --prefix admin run dev
+```
+
+Open http://localhost:3010 (or use **Staff login** in the website footer). The admin app forwards `/api` to the server on port 3020.
+
+### First sign-in
+
+- Email `admin@medium.mv`, password `Medium@2026!` (or `DEFAULT_ADMIN_PASSWORD` from `server/.env`).
+- You must choose a new password straight away; until then the server refuses everything else and prints a warning at start-up.
+- The default admin is only created when the database has no users, so it never comes back once staff exist.
+- Add staff from **Staff** with a temporary password and pass it on yourself (no emails are sent). They choose their own at first sign-in. Forgotten passwords: an admin sets a new temporary one.
+
+### Where the data lives
+
+- **Default:** a local Postgres database in `server/.data/` (created automatically, git-ignored). Back it up by copying the folder while the server is stopped.
+- **Supabase:** copy `server/.env.example` to `server/.env` and set `DATABASE_URL` to the Supabase connection string (Project Settings > Database > Connection string > Session pooler, with your database password). Tables are created on start-up. Backups are handled by Supabase. Never put the connection string or any Supabase key in the website or admin app.
+
+### Production
+
+Build both with `npm --prefix server run build` and `npm --prefix admin run build`. Run the server with `npm --prefix server start` (`NODE_ENV=production`, which makes the session cookie HTTPS-only), and serve `admin/dist/` from the same domain (e.g. `admin.medium.mv`) with `/api` routed to the server. Set `VITE_ADMIN_URL` for the website so the footer link points there.
+
+| Command | What it does |
+|---|---|
+| `npm --prefix server test` | Server tests (sign-in, permissions, staff, activity log) |
+| `npm --prefix admin test` | Admin app tests |
