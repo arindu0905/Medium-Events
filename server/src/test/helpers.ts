@@ -11,11 +11,11 @@ setPasswordCost(4); // fast hashing in tests only
 
 export const PASSWORD = 'Correct-Horse-1';
 
-export async function setup() {
+export async function setup(opts: Omit<Parameters<typeof createApp>[0], 'db' | 'now'> = {}) {
   const db = await openDb({ dataDir: 'memory' });
   await migrate(db, join(import.meta.dirname, '..', '..', 'migrations'));
   const clock = { now: new Date('2026-10-13T04:00:00Z') };
-  const app = createApp({ db, now: () => clock.now });
+  const app = createApp({ db, now: () => clock.now, ...opts });
   return {
     db,
     app,

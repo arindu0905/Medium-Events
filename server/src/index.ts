@@ -28,6 +28,12 @@ if (await defaultAdminPending(db)) {
 }
 
 const port = Number(process.env.PORT ?? 3020);
-createApp({ db }).listen(port, () => {
+createApp({
+  db,
+  config: {
+    publicSiteOrigin: process.env.PUBLIC_SITE_ORIGIN?.trim() || undefined,
+    deployHookUrl: process.env.SITE_DEPLOY_HOOK_URL?.trim() || undefined,
+  },
+}).listen(port, () => {
   console.log(`MEDIUM admin API on http://localhost:${port} (${url ? 'Postgres via DATABASE_URL' : `local database in ${dataDir}`})`);
 });
