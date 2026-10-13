@@ -1,4 +1,5 @@
 import express, { type NextFunction, type Request, type Response } from 'express';
+import { join } from 'node:path';
 import type { Db } from './db/index.js';
 import { requireAuth } from './auth/middleware.js';
 import { authRoutes, publicAuthRoutes } from './auth/routes.js';
@@ -30,7 +31,8 @@ export interface AppConfig {
   deployHookUrl?: string;
 }
 
-export function createApp(opts: { db: Db; now?: () => Date; fetch?: typeof fetch; config?: AppConfig }) {
+// adminDist: folder of the built admin app (admin/dist) to serve in production, from the same origin as /api
+export function createApp(opts: { db: Db; now?: () => Date; fetch?: typeof fetch; config?: AppConfig; adminDist?: string }) {
   const ctx: AppContext = { db: opts.db, now: opts.now ?? (() => new Date()), fetch: opts.fetch ?? fetch, config: opts.config ?? {} };
   const app = express();
   app.disable('x-powered-by');
@@ -66,6 +68,16 @@ export function createApp(opts: { db: Db; now?: () => Date; fetch?: typeof fetch
   app.use('/api', (_req, res) => {
     res.status(404).json({ error: 'Not found.' });
   });
+
+  if (opts.adminDist) {
+    const dist = opts.adminDist;
+    // Hashed asset files never change; index.html is always re-checked so new releases load
+    app.use('/assets', express.static(join(dist, 'assets'), { immutable: true, maxAge: '365d', fallthrough: false }));
+    app.use(express.static(dist, { index: false, setHeaders: (res) => res.set('Cache-Control', 'no-cache') }));
+    app.get('*', (_req, res) => {
+      res.set('Cache-Control', 'no-cache').sendFile(join(dist, 'index.html'));
+    });
+  }
 
   app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
     if (err instanceof HttpError) return res.status(err.status).json(err.fields ? { error: err.message, fields: err.fields } : { error: err.message });

@@ -6,15 +6,17 @@ import type { StaffRole } from './types';
 export type { Permission };
 export const can = (role: StaffRole | null | undefined, permission: Permission) => !!role && serverCan(role, permission);
 
-export type SectionId = 'dashboard' | 'events' | 'publish' | 'enquiries' | 'sponsors' | 'deals' | 'staff' | 'activity' | 'account';
+export type SectionId = 'dashboard' | 'events' | 'publish' | 'enquiries' | 'sponsors' | 'deals' | 'reports' | 'staff' | 'activity' | 'account';
 
-export const NAV_ITEMS: { id: SectionId; label: string; path: string; permission: Permission | null }[] = [
+// permission: null = everyone; a list = anyone with at least one of them
+export const NAV_ITEMS: { id: SectionId; label: string; path: string; permission: Permission | Permission[] | null }[] = [
   { id: 'dashboard', label: 'Dashboard', path: '/', permission: null },
   { id: 'events', label: 'Events', path: '/events', permission: 'events.read' },
   { id: 'publish', label: 'Publish', path: '/publish', permission: 'events.publish' },
   { id: 'enquiries', label: 'Enquiries', path: '/enquiries', permission: 'enquiries.access' },
   { id: 'sponsors', label: 'Sponsors', path: '/sponsors', permission: 'sponsors.read' },
   { id: 'deals', label: 'Deals', path: '/deals', permission: 'deals.read' },
+  { id: 'reports', label: 'Reports', path: '/reports', permission: ['reports.postEvent', 'reports.sponsorship', 'reports.enquiries'] },
   { id: 'staff', label: 'Staff', path: '/staff', permission: 'staff.write' },
   { id: 'activity', label: 'Activity log', path: '/activity', permission: null },
   { id: 'account', label: 'My account', path: '/account', permission: null },
@@ -22,7 +24,8 @@ export const NAV_ITEMS: { id: SectionId; label: string; path: string; permission
 
 export function canSee(role: StaffRole, section: SectionId): boolean {
   const item = NAV_ITEMS.find((i) => i.id === section)!;
-  return item.permission === null || can(role, item.permission);
+  if (item.permission === null) return true;
+  return (Array.isArray(item.permission) ? item.permission : [item.permission]).some((p) => can(role, p));
 }
 
 export function rolesFor(section: SectionId): StaffRole[] {

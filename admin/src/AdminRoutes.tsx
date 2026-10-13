@@ -21,6 +21,7 @@ import SponsorsPage from './pages/SponsorsPage';
 import SponsorPage from './pages/SponsorPage';
 import DealsPage from './pages/DealsPage';
 import DealPage from './pages/DealPage';
+import ReportsPage from './pages/ReportsPage';
 
 export function AdminRoutes() {
   return (
@@ -52,6 +53,7 @@ export function AdminRoutes() {
               <Route path="/deals" element={<DealsPage />} />
               <Route path="/deals/:id" element={<DealPage />} />
             </Route>
+            <Route path="/reports" element={<RequireAuth roles={rolesFor('reports')}><ReportsPage /></RequireAuth>} />
             <Route path="/publish" element={<RequireAuth roles={rolesFor('publish')}><PublishPage /></RequireAuth>} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>

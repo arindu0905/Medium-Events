@@ -38,6 +38,7 @@ export function createFakeApi(
     sponsors?: Sponsor[];
     deals?: Deal[];
     payments?: Payment[];
+    dashboard?: { id: string; label: string; value: string }[];
   } = {},
 ) {
   const state = {
@@ -54,6 +55,7 @@ export function createFakeApi(
     sponsors: (init.sponsors ?? []).map((x) => ({ ...x })),
     deals: (init.deals ?? []).map((x) => ({ ...x })),
     payments: (init.payments ?? []).map((x) => ({ ...x })),
+    dashboard: init.dashboard ?? [],
     calls: [] as { method: string; path: string; body?: unknown }[],
     // Set to make the next matching call fail
     failNext: null as null | { status: number; error: string },
@@ -144,6 +146,7 @@ export function createFakeApi(
     if (enquiries !== NOT_HANDLED) return enquiries;
     const sales = handleSales(state, user, method, route, new URLSearchParams(query), body, fail, nextId);
     if (sales !== NOT_HANDLED) return sales;
+    if (method === 'GET' && route === '/dashboard') return { cards: state.dashboard };
     return fail(404, 'Not found.');
   }
 

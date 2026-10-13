@@ -43,10 +43,10 @@ describe('permissions', () => {
 
 describe('Layout', () => {
   it.each([
-    ['admin', ['Dashboard', 'Events', 'Publish', 'Enquiries', 'Sponsors', 'Deals', 'Staff', 'Activity log', 'My account']],
-    ['events', ['Dashboard', 'Events', 'Publish', 'Sponsors', 'Deals', 'Activity log', 'My account']],
-    ['sales', ['Dashboard', 'Events', 'Enquiries', 'Sponsors', 'Deals', 'Activity log', 'My account']],
-    ['finance', ['Dashboard', 'Events', 'Sponsors', 'Deals', 'Activity log', 'My account']],
+    ['admin', ['Dashboard', 'Events', 'Publish', 'Enquiries', 'Sponsors', 'Deals', 'Reports', 'Staff', 'Activity log', 'My account']],
+    ['events', ['Dashboard', 'Events', 'Publish', 'Sponsors', 'Deals', 'Reports', 'Activity log', 'My account']],
+    ['sales', ['Dashboard', 'Events', 'Enquiries', 'Sponsors', 'Deals', 'Reports', 'Activity log', 'My account']],
+    ['finance', ['Dashboard', 'Events', 'Sponsors', 'Deals', 'Reports', 'Activity log', 'My account']],
   ] as [StaffRole, string[]][])('gives %s the right sections', async (role, labels) => {
     renderAs(role);
     expect(await navLabels()).toEqual(labels);

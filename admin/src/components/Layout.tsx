@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router';
-import { Activity, Building2, CalendarDays, CircleUser, Handshake, Inbox, LayoutDashboard, LogOut, Menu, Send, Users, X } from 'lucide-react';
+import { Activity, Building2, CalendarDays, CircleUser, FileText, Handshake, Inbox, LayoutDashboard, LogOut, Menu, Send, Users, X } from 'lucide-react';
 import { useAuth } from '../lib/auth';
 import { navFor, type SectionId } from '../lib/permissions';
 import { ROLE_LABELS } from '../lib/types';
@@ -12,6 +12,7 @@ const ICONS: Record<SectionId, React.FC<{ className?: string }>> = {
   enquiries: Inbox,
   sponsors: Building2,
   deals: Handshake,
+  reports: FileText,
   staff: Users,
   activity: Activity,
   account: CircleUser,

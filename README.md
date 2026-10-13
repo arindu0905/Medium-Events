@@ -79,6 +79,19 @@ Open http://localhost:3010 (or use **Staff login** in the website footer). The a
 - The default admin is only created when the database has no users, so it never comes back once staff exist.
 - Add staff from **Staff** with a temporary password and pass it on yourself (no emails are sent). They choose their own at first sign-in. Forgotten passwords: an admin sets a new temporary one.
 
+### What staff can do
+
+| Section | Who | What |
+|---|---|---|
+| Dashboard | everyone | Figures for their role (enquiries, money per currency, upcoming events) |
+| Events | everyone reads; admin and events team edit | Series, editions, banners, partners, attendance and outcome notes |
+| Publish | admin, events team | Sends events to the website |
+| Enquiries | admin, sales | Website and manual leads, status, assignee, notes |
+| Sponsors and Deals | everyone reads; admin and sales edit | Sponsor companies and deals per event in MVR or USD; the events team never sees amounts |
+| Payments (inside a deal) | admin and finance record; sales read; admin deletes | Received and outstanding per deal |
+| Reports | per role | Post-event (PDF), sponsorship (PDF, Excel), enquiries (Excel) |
+| Staff, Activity log, My account | as before | |
+
 ### Where the data lives
 
 - **Default:** a local Postgres database in `server/.data/` (created automatically, git-ignored). Back it up by copying the folder while the server is stopped.
@@ -92,9 +105,9 @@ Open http://localhost:3010 (or use **Staff login** in the website footer). The a
 
 ### Production
 
-Build both with `npm --prefix server run build` and `npm --prefix admin run build`. Run the server with `npm --prefix server start` (`NODE_ENV=production`, which makes the session cookie HTTPS-only), and serve `admin/dist/` from the same domain (e.g. `admin.medium.mv`) with `/api` routed to the server. Set `VITE_ADMIN_URL` for the website so the footer link points there.
+Build both with `npm --prefix server run build` and `npm --prefix admin run build`, then run `npm --prefix server start` with `NODE_ENV=production` on any Node 22 host (Render, Railway, Fly.io, a VPS). In production the server also serves the built admin app, so one address (e.g. `https://admin.medium.mv`) gives both the app and `/api`, and the session cookie is HTTPS-only. Set `DATABASE_URL` to Supabase there. On the website, set `VITE_ADMIN_URL` (footer Staff login link) and `VITE_ADMIN_API_URL` (published events and enquiries) to that address.
 
 | Command | What it does |
 |---|---|
-| `npm --prefix server test` | Server tests (sign-in, permissions, staff, activity log) |
+| `npm --prefix server test` | Server tests (sign-in, permissions for every role, events, publishing, enquiries, sponsors, deals, payments, reports) |
 | `npm --prefix admin test` | Admin app tests |
