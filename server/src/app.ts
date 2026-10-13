@@ -2,6 +2,8 @@ import express, { type NextFunction, type Request, type Response } from 'express
 import type { Db } from './db/index.js';
 import { requireAuth } from './auth/middleware.js';
 import { authRoutes, publicAuthRoutes } from './auth/routes.js';
+import { staffRoutes } from './staff/routes.js';
+import { HttpError } from './http.js';
 
 export interface AppContext {
   db: Db;
@@ -25,12 +27,14 @@ export function createApp(opts: { db: Db; now?: () => Date }) {
   // Everything else under /api needs a signed-in, active user
   app.use('/api', requireAuth(ctx));
   app.use('/api/auth', authRoutes(ctx));
+  app.use('/api/staff', staffRoutes(ctx));
 
   app.use('/api', (_req, res) => {
     res.status(404).json({ error: 'Not found.' });
   });
 
   app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+    if (err instanceof HttpError) return res.status(err.status).json(err.fields ? { error: err.message, fields: err.fields } : { error: err.message });
     console.error(err);
     res.status(500).json({ error: 'Something went wrong. Try again.' });
   });
