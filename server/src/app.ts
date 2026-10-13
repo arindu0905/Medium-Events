@@ -8,6 +8,7 @@ import { fileRoutes } from './files/routes.js';
 import { eventRoutes } from './events/routes.js';
 import { publishRoutes } from './publish/routes.js';
 import { publicRoutes } from './public/routes.js';
+import { enquiryRoutes } from './enquiries/routes.js';
 import { HttpError } from './http.js';
 
 export interface AppContext {
@@ -51,6 +52,7 @@ export function createApp(opts: { db: Db; now?: () => Date; fetch?: typeof fetch
   app.use('/api/editions', events.editions);
   app.use('/api/partners', events.partners);
   app.use('/api/publish', publishRoutes(ctx));
+  app.use('/api/enquiries', enquiryRoutes(ctx));
 
   app.use('/api', (_req, res) => {
     res.status(404).json({ error: 'Not found.' });

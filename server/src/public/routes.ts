@@ -3,11 +3,13 @@ import type { AppContext } from '../app.js';
 import { sendFile } from '../files/routes.js';
 import { HttpError, route } from '../http.js';
 import { publicCors } from './cors.js';
+import { publicEnquiryRoutes } from './enquiries.js';
 
 // No sign-in: what the public website needs to build its event pages
 export function publicRoutes(ctx: AppContext) {
   const router = Router();
   router.use(publicCors(ctx.config.publicSiteOrigin));
+  router.use('/enquiries', publicEnquiryRoutes(ctx));
 
   const latest = async () => {
     const [row] = await ctx.db.query<{ data: Record<string, unknown> }>('select data from published_snapshots order by id desc limit 1');
