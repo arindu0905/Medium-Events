@@ -1,7 +1,8 @@
 // In-memory stand-in for the MEDIUM server's API, used by component tests.
 // Mirrors the server's rules closely enough for the UI: sign-in, forced password change, staff, activity.
 import { ApiError, reportApiError } from '../lib/api';
-import type { ActivityRow, StaffMember, StaffRole } from '../lib/types';
+import type { ActivityRow, Edition, Partner, PublishInfo, Series, StaffMember, StaffRole } from '../lib/types';
+import { NOT_HANDLED, handleEvents } from './fakeEvents';
 
 export interface FakeUser extends Required<Omit<StaffMember, 'last_login_at' | 'created_at'>> {
   password: string;
@@ -20,20 +21,38 @@ export function makeUser(overrides: Partial<FakeUser> = {}): FakeUser {
   };
 }
 
-export function createFakeApi(init: { users?: FakeUser[]; signedInAs?: string; activity?: ActivityRow[]; activityTotal?: number } = {}) {
+export function createFakeApi(
+  init: {
+    users?: FakeUser[];
+    signedInAs?: string;
+    activity?: ActivityRow[];
+    activityTotal?: number;
+    series?: Series[];
+    editions?: Edition[];
+    partners?: Partner[];
+    published?: PublishInfo | null;
+  } = {},
+) {
   const state = {
     users: (init.users ?? []).map((u) => ({ ...u })),
     sessionUserId: init.signedInAs ?? (null as string | null),
     activity: init.activity ?? [],
     activityTotal: init.activityTotal,
+    series: (init.series ?? []).map((x) => ({ ...x })),
+    editions: (init.editions ?? []).map((x) => ({ ...x })),
+    partners: (init.partners ?? []).map((x) => ({ ...x })),
+    files: [] as { id: string; filename: string; type: string }[],
+    published: init.published ?? null,
     calls: [] as { method: string; path: string; body?: unknown }[],
     // Set to make the next matching call fail
     failNext: null as null | { status: number; error: string },
   };
   const me = () => state.users.find((u) => u.id === state.sessionUserId && u.active) ?? null;
   // Errors reach the same listeners as real server errors (the auth provider uses them)
-  const fail = (status: number, error: string): never => {
-    const apiError = new ApiError(status, error);
+  let ids = 0;
+  const nextId = () => `new-${++ids}`;
+  const fail = (status: number, error: string, fields?: Record<string, string>): never => {
+    const apiError = new ApiError(status, error, fields);
     reportApiError(apiError);
     throw apiError;
   };
@@ -107,6 +126,8 @@ export function createFakeApi(init: { users?: FakeUser[]; signedInAs?: string; a
       const page = Number(params.get('page') ?? 0);
       return { rows: rows.slice(page * 50, page * 50 + 50), total: state.activityTotal ?? rows.length };
     }
+    const events = handleEvents(state, user.role, method, route, new URLSearchParams(query), body, fail, nextId);
+    if (events !== NOT_HANDLED) return events;
     return fail(404, 'Not found.');
   }
 
@@ -115,6 +136,7 @@ export function createFakeApi(init: { users?: FakeUser[]; signedInAs?: string; a
     post: (path: string, body?: Record<string, unknown>) => handle('POST', path, body),
     patch: (path: string, body: Record<string, unknown>) => handle('PATCH', path, body),
     del: (path: string) => handle('DELETE', path),
+    upload: (path: string, file: Blob) => handle('POST', path, { type: file.type }),
   };
   return { api, state };
 }

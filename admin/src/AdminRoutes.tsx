@@ -11,6 +11,10 @@ import NotFoundPage from './pages/NotFoundPage';
 import StaffPage from './pages/StaffPage';
 import ActivityPage from './pages/ActivityPage';
 import AccountPage from './pages/AccountPage';
+import EventsPage from './pages/EventsPage';
+import SeriesPage from './pages/SeriesPage';
+import EditionPage from './pages/EditionPage';
+import PublishPage from './pages/PublishPage';
 
 export function AdminRoutes() {
   return (
@@ -24,6 +28,13 @@ export function AdminRoutes() {
             <Route path="/staff" element={<RequireAuth roles={rolesFor('staff')}><StaffPage /></RequireAuth>} />
             <Route path="/activity" element={<RequireAuth roles={rolesFor('activity')}><ActivityPage /></RequireAuth>} />
             <Route path="/account" element={<AccountPage />} />
+            <Route element={<RequireAuth roles={rolesFor('events')} />}>
+              <Route path="/events" element={<EventsPage />} />
+              <Route path="/events/editions/:id" element={<EditionPage />} />
+              <Route path="/events/:seriesId/editions/new" element={<EditionPage />} />
+              <Route path="/events/:id" element={<SeriesPage />} />
+            </Route>
+            <Route path="/publish" element={<RequireAuth roles={rolesFor('publish')}><PublishPage /></RequireAuth>} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Route>

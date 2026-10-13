@@ -39,21 +39,7 @@ export const ACTION_LABELS: Record<ActivityRow['action'], string> = {
 export const entityLabel = (entity: string) => ENTITY_LABELS[entity] ?? entity;
 export const actionLabel = (action: string) => ACTION_LABELS[action as ActivityRow['action']] ?? action;
 
-const timeFormat = new Intl.DateTimeFormat('en-GB', {
-  timeZone: 'Indian/Maldives',
-  day: 'numeric',
-  month: 'short',
-  year: 'numeric',
-  hour: '2-digit',
-  minute: '2-digit',
-  hour12: false,
-});
-
-// e.g. "12 Oct 2026, 09:30" in Maldives time
-export function formatWhen(iso: string): string {
-  const parts = Object.fromEntries(timeFormat.formatToParts(new Date(iso)).map((p) => [p.type, p.value]));
-  return `${parts.day} ${parts.month} ${parts.year}, ${parts.hour}:${parts.minute}`;
-}
+export { formatWhen } from './dates';
 
 const isChange = (value: unknown): value is { old: unknown; new: unknown } =>
   typeof value === 'object' && value !== null && 'old' in value && 'new' in value;

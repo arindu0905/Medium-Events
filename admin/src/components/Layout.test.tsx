@@ -42,14 +42,14 @@ describe('permissions', () => {
 });
 
 describe('Layout', () => {
-  it('gives admins Dashboard, Staff, Activity log and My account', async () => {
-    renderAs('admin');
-    expect(await navLabels()).toEqual(['Dashboard', 'Staff', 'Activity log', 'My account']);
-  });
-
-  it.each(['sales', 'events', 'finance'] as StaffRole[])('gives %s everything except Staff', async (role) => {
+  it.each([
+    ['admin', ['Dashboard', 'Events', 'Publish', 'Staff', 'Activity log', 'My account']],
+    ['events', ['Dashboard', 'Events', 'Publish', 'Activity log', 'My account']],
+    ['sales', ['Dashboard', 'Events', 'Activity log', 'My account']],
+    ['finance', ['Dashboard', 'Events', 'Activity log', 'My account']],
+  ] as [StaffRole, string[]][])('gives %s the right sections', async (role, labels) => {
     renderAs(role);
-    expect(await navLabels()).toEqual(['Dashboard', 'Activity log', 'My account']);
+    expect(await navLabels()).toEqual(labels);
   });
 
   it('blocks non-admins from the Staff page', async () => {

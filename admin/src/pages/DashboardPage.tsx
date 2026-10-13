@@ -1,11 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router';
 import { useAuth } from '../lib/auth';
-import { NAV_ITEMS } from '../lib/permissions';
+import { navFor } from '../lib/permissions';
 import { ROLE_LABELS } from '../lib/types';
 
 const DESCRIPTIONS: Record<string, string> = {
-  staff: 'Invite staff, change roles and deactivate accounts.',
+  events: 'Event series, editions, banners and partners.',
+  publish: 'Update the website with the latest events.',
+  staff: 'Add staff, change roles and deactivate accounts.',
   activity: 'See who changed what, and when.',
   account: 'Your details and password.',
 };
@@ -13,7 +15,7 @@ const DESCRIPTIONS: Record<string, string> = {
 export default function DashboardPage() {
   const { user, role } = useAuth();
   const firstName = user?.full_name.split(' ')[0] ?? '';
-  const shortcuts = NAV_ITEMS.filter((item) => item.id !== 'dashboard' && role && item.roles.includes(role));
+  const shortcuts = navFor(role).filter((item) => item.id !== 'dashboard');
 
   return (
     <section>

@@ -28,14 +28,14 @@ export function reportApiError(error: ApiError) {
 
 const UNREACHABLE = "Can't reach the MEDIUM server. Check it's running and try again.";
 
-async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
+async function request<T>(method: string, path: string, body?: unknown, file?: Blob): Promise<T> {
   let res: Response;
   try {
     res = await fetch(`/api${path}`, {
       method,
       credentials: 'same-origin',
-      headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
-      body: body === undefined ? undefined : JSON.stringify(body),
+      headers: file ? { 'Content-Type': file.type } : body === undefined ? undefined : { 'Content-Type': 'application/json' },
+      body: file ?? (body === undefined ? undefined : JSON.stringify(body)),
     });
   } catch {
     throw new ApiError(0, UNREACHABLE);
@@ -57,4 +57,6 @@ export const api = {
   post: <T>(path: string, body?: unknown) => request<T>('POST', path, body ?? {}),
   patch: <T>(path: string, body: unknown) => request<T>('PATCH', path, body),
   del: <T>(path: string) => request<T>('DELETE', path),
+  // Sends a file as the raw request body (image uploads)
+  upload: <T>(path: string, file: Blob) => request<T>('POST', path, undefined, file),
 };

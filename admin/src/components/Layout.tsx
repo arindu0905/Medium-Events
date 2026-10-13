@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router';
-import { Activity, CircleUser, LayoutDashboard, LogOut, Menu, Users, X } from 'lucide-react';
+import { Activity, CalendarDays, CircleUser, LayoutDashboard, LogOut, Menu, Send, Users, X } from 'lucide-react';
 import { useAuth } from '../lib/auth';
-import { NAV_ITEMS, type SectionId } from '../lib/permissions';
+import { navFor, type SectionId } from '../lib/permissions';
 import { ROLE_LABELS } from '../lib/types';
 
 const ICONS: Record<SectionId, React.FC<{ className?: string }>> = {
   dashboard: LayoutDashboard,
+  events: CalendarDays,
+  publish: Send,
   staff: Users,
   activity: Activity,
   account: CircleUser,
@@ -19,7 +21,7 @@ export const Layout: React.FC = () => {
 
   useEffect(() => setMenuOpen(false), [pathname]);
 
-  const items = NAV_ITEMS.filter((item) => role && item.roles.includes(role));
+  const items = navFor(role);
 
   return (
     <div className="min-h-screen lg:grid lg:grid-cols-[240px_1fr]">
