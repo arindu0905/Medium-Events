@@ -1,5 +1,7 @@
 # Admin Backend — Piece 1: Foundation (Supabase, Roles, Staff, Activity Log)
 
+> **Superseded 2026-10-13** by `2026-10-13-admin-backend-design.md`: Supabase is now used only as a database; accounts and sessions moved to our own server.
+
 **Date:** 2026-10-12
 **Status:** Approved in conversation, awaiting spec review
 **Builds on:** branch `feat/international-redesign` (public site). Public site behaviour is unchanged by this piece.
