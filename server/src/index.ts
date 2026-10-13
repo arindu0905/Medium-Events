@@ -8,6 +8,7 @@ import { openDb } from './db/index.js';
 import { migrate } from './db/migrate.js';
 import { createApp } from './app.js';
 import { DEFAULT_ADMIN_EMAIL, defaultAdminPending, ensureDefaultAdmin } from './bootstrap.js';
+import { seedEvents } from './seed.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const url = process.env.DATABASE_URL?.trim() || undefined;
@@ -17,6 +18,7 @@ if (!url) mkdirSync(dataDir, { recursive: true });
 const db = await openDb({ url, dataDir });
 const applied = await migrate(db, join(root, 'migrations'));
 if (applied.length) console.log(`Applied migrations: ${applied.join(', ')}`);
+if ((await seedEvents(db, join(root, 'seed'))) === 'seeded') console.log("Loaded MEDIUM's event series and past editions");
 
 if ((await ensureDefaultAdmin(db, process.env.DEFAULT_ADMIN_PASSWORD?.trim())) === 'created') {
   console.log(`Created the default admin: ${DEFAULT_ADMIN_EMAIL}`);
