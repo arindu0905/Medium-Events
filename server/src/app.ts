@@ -9,6 +9,7 @@ import { eventRoutes } from './events/routes.js';
 import { publishRoutes } from './publish/routes.js';
 import { publicRoutes } from './public/routes.js';
 import { enquiryRoutes } from './enquiries/routes.js';
+import { salesRoutes } from './sales/routes.js';
 import { HttpError } from './http.js';
 
 export interface AppContext {
@@ -53,6 +54,10 @@ export function createApp(opts: { db: Db; now?: () => Date; fetch?: typeof fetch
   app.use('/api/partners', events.partners);
   app.use('/api/publish', publishRoutes(ctx));
   app.use('/api/enquiries', enquiryRoutes(ctx));
+  const sales = salesRoutes(ctx);
+  app.use('/api/sponsors', sales.sponsors);
+  app.use('/api/deals', sales.deals);
+  app.use('/api/payments', sales.payments);
 
   app.use('/api', (_req, res) => {
     res.status(404).json({ error: 'Not found.' });
