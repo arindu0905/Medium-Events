@@ -11,3 +11,6 @@ dist-ssr/
 supabase/.env.local
 supabase/.temp/
 admin/dist/
+server/.data/
+server/.env
+server/dist/
