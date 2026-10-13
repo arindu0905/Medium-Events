@@ -1,22 +1,22 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { AdminRoutes } from '../AdminRoutes';
-import { createFakeSupabase, makeProfile } from '../test/fakeSupabase';
+import { createFakeApi, makeUser } from '../test/fakeApi';
 import type { StaffRole } from '../lib/types';
 import { canSee } from '../lib/permissions';
 
-const holder = vi.hoisted(() => ({ fake: null as unknown as ReturnType<typeof createFakeSupabase> }));
-vi.mock('../lib/supabase', () => ({
-  DEMO_MODE: false,
-  get supabase() {
-    return holder.fake.client;
+const holder = vi.hoisted(() => ({ fake: null as unknown as ReturnType<typeof createFakeApi> }));
+vi.mock('../lib/api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../lib/api')>()),
+  get api() {
+    return holder.fake.api;
   },
 }));
 
 function renderAs(role: StaffRole, url = '/') {
-  const profile = makeProfile({ id: `u-${role}`, role, full_name: 'Sam Example', email: `${role}@medium.test` });
-  holder.fake = createFakeSupabase({ profiles: [profile], session: { user: { id: profile.id, email: profile.email } } });
+  const user = makeUser({ id: `u-${role}`, role, full_name: 'Sam Example', email: `${role}@medium.test` });
+  holder.fake = createFakeApi({ users: [user], signedInAs: user.id });
   return render(
     <MemoryRouter initialEntries={[url]}>
       <AdminRoutes />
@@ -29,8 +29,6 @@ const navLabels = async () =>
     .getAllByRole('link')
     .map((a) => a.textContent);
 
-beforeEach(() => vi.clearAllMocks());
-
 describe('permissions', () => {
   it('shows Staff only to admins', () => {
     expect(canSee('admin', 'staff')).toBe(true);
@@ -38,19 +36,20 @@ describe('permissions', () => {
       expect(canSee(role, 'staff')).toBe(false);
       expect(canSee(role, 'dashboard')).toBe(true);
       expect(canSee(role, 'activity')).toBe(true);
+      expect(canSee(role, 'account')).toBe(true);
     }
   });
 });
 
 describe('Layout', () => {
-  it('gives admins Dashboard, Staff and Activity log', async () => {
+  it('gives admins Dashboard, Staff, Activity log and My account', async () => {
     renderAs('admin');
-    expect(await navLabels()).toEqual(['Dashboard', 'Staff', 'Activity log']);
+    expect(await navLabels()).toEqual(['Dashboard', 'Staff', 'Activity log', 'My account']);
   });
 
-  it.each(['sales', 'events', 'finance'] as StaffRole[])('gives %s Dashboard and Activity log only', async (role) => {
+  it.each(['sales', 'events', 'finance'] as StaffRole[])('gives %s everything except Staff', async (role) => {
     renderAs(role);
-    expect(await navLabels()).toEqual(['Dashboard', 'Activity log']);
+    expect(await navLabels()).toEqual(['Dashboard', 'Activity log', 'My account']);
   });
 
   it('blocks non-admins from the Staff page', async () => {

@@ -11,4 +11,11 @@ export default defineConfig({
       '@site': fileURLToPath(new URL('../src', import.meta.url)),
     },
   },
+  server: {
+    // The MEDIUM server (server/, port 3020) answers /api; same origin keeps the session cookie simple
+    proxy: { '/api': 'http://localhost:3020' },
+  },
+  preview: {
+    proxy: { '/api': 'http://localhost:3020' },
+  },
 });

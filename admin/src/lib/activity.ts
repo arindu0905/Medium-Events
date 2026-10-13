@@ -1,37 +1,43 @@
-import { supabase } from './supabase';
+import { ApiError, api } from './api';
 import type { ActivityRow } from './types';
 
+// Matches server/src/activity/routes.ts
 export const PAGE_SIZE = 50;
-// Dates in filters are Maldives calendar days (UTC+5, no daylight saving)
-const MALDIVES_OFFSET = '+05:00';
 
 export interface ActivityFilters {
   actorId?: string;
-  table?: string;
   action?: string;
-  from?: string; // YYYY-MM-DD
-  to?: string; // YYYY-MM-DD
+  from?: string; // YYYY-MM-DD, a Maldives calendar day
+  to?: string; // YYYY-MM-DD, inclusive
   page: number; // 0-based
 }
 
 export async function listActivity(f: ActivityFilters): Promise<{ rows: ActivityRow[]; total: number }> {
-  let query = supabase.from('activity_log').select('*', { count: 'exact' });
-  if (f.actorId) query = query.eq('actor_id', f.actorId);
-  if (f.table) query = query.eq('table_name', f.table);
-  if (f.action) query = query.eq('action', f.action);
-  if (f.from) query = query.gte('at', `${f.from}T00:00:00${MALDIVES_OFFSET}`);
-  if (f.to) query = query.lte('at', `${f.to}T23:59:59${MALDIVES_OFFSET}`);
-  const start = f.page * PAGE_SIZE;
-  const { data, error, count } = await query.order('at', { ascending: false }).range(start, start + PAGE_SIZE - 1);
-  if (error) throw new Error("The activity log couldn't be loaded. Refresh to try again.");
-  return { rows: (data ?? []) as ActivityRow[], total: count ?? 0 };
+  const params = new URLSearchParams();
+  if (f.actorId) params.set('actor', f.actorId);
+  if (f.action) params.set('action', f.action);
+  if (f.from) params.set('from', f.from);
+  if (f.to) params.set('to', f.to);
+  params.set('page', String(f.page));
+  try {
+    return await api.get(`/activity?${params}`);
+  } catch (e) {
+    throw new Error(e instanceof ApiError && e.status !== 0 ? e.message : "The activity log couldn't be loaded. Refresh to try again.");
+  }
 }
 
-const TABLE_LABELS: Record<string, string> = { profiles: 'Staff' };
-const ACTION_LABELS: Record<string, string> = { insert: 'Created', update: 'Updated', delete: 'Deleted' };
+const ENTITY_LABELS: Record<string, string> = { users: 'Staff' };
+export const ACTION_LABELS: Record<ActivityRow['action'], string> = {
+  create: 'Created',
+  update: 'Updated',
+  delete: 'Deleted',
+  login: 'Signed in',
+  publish: 'Published',
+  export: 'Exported',
+};
 
-export const tableLabel = (table: string) => TABLE_LABELS[table] ?? table;
-export const actionLabel = (action: string) => ACTION_LABELS[action] ?? action;
+export const entityLabel = (entity: string) => ENTITY_LABELS[entity] ?? entity;
+export const actionLabel = (action: string) => ACTION_LABELS[action as ActivityRow['action']] ?? action;
 
 const timeFormat = new Intl.DateTimeFormat('en-GB', {
   timeZone: 'Indian/Maldives',
@@ -49,10 +55,13 @@ export function formatWhen(iso: string): string {
   return `${parts.day} ${parts.month} ${parts.year}, ${parts.hour}:${parts.minute}`;
 }
 
-// Readable summary of an update's changed columns: field: "old" → "new"
+const isChange = (value: unknown): value is { old: unknown; new: unknown } =>
+  typeof value === 'object' && value !== null && 'old' in value && 'new' in value;
+
+// Readable summary of an update: field: "old" → "new" for changed fields, field: value for notes like { password: 'changed' }
 export function summariseChanges(row: ActivityRow): string {
   if (row.action !== 'update') return '';
-  return Object.entries(row.changes as Record<string, { old: unknown; new: unknown }>)
-    .map(([field, change]) => `${field}: ${JSON.stringify(change.old)} → ${JSON.stringify(change.new)}`)
+  return Object.entries(row.changes)
+    .map(([field, value]) => (isChange(value) ? `${field}: ${JSON.stringify(value.old)} → ${JSON.stringify(value.new)}` : `${field}: ${value}`))
     .join('; ');
 }

@@ -2,17 +2,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { AdminRoutes } from '../AdminRoutes';
-import { createFakeSupabase, makeProfile } from '../test/fakeSupabase';
+import { createFakeApi, makeUser } from '../test/fakeApi';
 
-const holder = vi.hoisted(() => ({ fake: null as unknown as ReturnType<typeof createFakeSupabase> }));
-vi.mock('./supabase', () => ({
-  DEMO_MODE: false,
-  get supabase() {
-    return holder.fake.client;
+const holder = vi.hoisted(() => ({ fake: null as unknown as ReturnType<typeof createFakeApi> }));
+vi.mock('./api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./api')>()),
+  get api() {
+    return holder.fake.api;
   },
 }));
-
-const admin = makeProfile();
 
 function renderAt(url: string) {
   return render(
@@ -22,25 +20,25 @@ function renderAt(url: string) {
   );
 }
 
-async function signInViaForm(email = admin.email, password = 'correct-password') {
+async function signInViaForm(email = 'admin@medium.test', password = 'correct-password') {
   fireEvent.change(await screen.findByLabelText('Email'), { target: { value: email } });
   fireEvent.change(screen.getByLabelText('Password'), { target: { value: password } });
   fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
 }
 
 beforeEach(() => {
-  holder.fake = createFakeSupabase({ profiles: [admin] });
+  holder.fake = createFakeApi({ users: [makeUser()] });
 });
 
-describe('authentication', () => {
+describe('signing in', () => {
   it('sends signed-out visitors to the sign-in page', async () => {
     renderAt('/');
     expect(await screen.findByRole('heading', { name: 'Sign in to MEDIUM Admin' })).toBeTruthy();
   });
 
-  it('shows a plain error for a wrong password', async () => {
+  it('shows the server message for a wrong password', async () => {
     renderAt('/');
-    await signInViaForm(admin.email, 'wrong');
+    await signInViaForm('admin@medium.test', 'wrong');
     expect(await screen.findByText('Email or password is incorrect.')).toBeTruthy();
   });
 
@@ -51,80 +49,103 @@ describe('authentication', () => {
     expect(screen.getByText('Signed in as Admin')).toBeTruthy();
   });
 
-  it('refuses a deactivated account', async () => {
-    holder.fake = createFakeSupabase({ profiles: [makeProfile({ active: false })] });
-    renderAt('/');
-    await signInViaForm();
-    expect(await screen.findByText('Your account is deactivated. Contact a MEDIUM admin.')).toBeTruthy();
-    expect(holder.fake.state.session).toBeNull();
+  it('explains how to get a forgotten password reset, without email', async () => {
+    renderAt('/login');
+    expect(await screen.findByText('Forgot your password? Ask a MEDIUM admin to set a temporary one.')).toBeTruthy();
   });
+});
 
-  it('signs out a user who is deactivated during their session', async () => {
+describe('during a session', () => {
+  it('signs out someone whose session ended, for example after being deactivated', async () => {
     renderAt('/');
     await signInViaForm();
     await screen.findByText('Welcome, Aisha');
-    holder.fake.state.profiles[0].active = false;
+    holder.fake.state.users[0].active = false;
     fireEvent.click(screen.getByRole('link', { name: 'Activity log' }));
-    expect(await screen.findByText('Your account is deactivated. Contact a MEDIUM admin.')).toBeTruthy();
-    expect(holder.fake.state.session).toBeNull();
+    expect(await screen.findByText('Your session has ended. Sign in again.')).toBeTruthy();
   });
 
   it('picks up a role change on the next navigation', async () => {
     renderAt('/');
     await signInViaForm();
     await screen.findByText('Signed in as Admin');
-    holder.fake.state.profiles[0].role = 'sales';
+    holder.fake.state.users[0].role = 'sales';
     fireEvent.click(screen.getByRole('link', { name: 'Activity log' }));
     fireEvent.click(await screen.findByRole('link', { name: 'Dashboard' }));
     expect(await screen.findByText('Signed in as Sales')).toBeTruthy();
   });
+
+  it('signs out', async () => {
+    renderAt('/');
+    await signInViaForm();
+    fireEvent.click(await screen.findByRole('button', { name: 'Sign out' }));
+    expect(await screen.findByRole('heading', { name: 'Sign in to MEDIUM Admin' })).toBeTruthy();
+    expect(holder.fake.state.sessionUserId).toBeNull();
+  });
 });
 
 describe('first sign-in password change', () => {
-  const fill = (password: string, confirm: string) => {
+  const fill = (current: string, password: string, confirm: string) => {
+    fireEvent.change(screen.getByLabelText('Current password'), { target: { value: current } });
     fireEvent.change(screen.getByLabelText('New password'), { target: { value: password } });
-    fireEvent.change(screen.getByLabelText('Confirm password'), { target: { value: confirm } });
+    fireEvent.change(screen.getByLabelText('Confirm new password'), { target: { value: confirm } });
     fireEvent.click(screen.getByRole('button', { name: 'Save password' }));
   };
 
   beforeEach(() => {
-    holder.fake = createFakeSupabase({ profiles: [makeProfile({ must_change_password: true })] });
+    holder.fake = createFakeApi({ users: [makeUser({ must_change_password: true })] });
   });
 
-  it('sends a user with a temporary password to choose a new one first', async () => {
+  it('sends someone on a temporary password to choose a new one first', async () => {
     renderAt('/');
     await signInViaForm();
     expect(await screen.findByRole('heading', { name: 'Choose a new password' })).toBeTruthy();
     expect(screen.queryByText('Welcome, Aisha')).toBeNull();
   });
 
-  it('requires at least 10 characters and matching passwords', async () => {
+  it('checks length and matching before sending', async () => {
     renderAt('/');
     await signInViaForm();
     await screen.findByLabelText('New password');
-    fill('short', 'short');
+    fill('correct-password', 'short', 'short');
     expect(screen.getByText('Use at least 10 characters.')).toBeTruthy();
-    fill('long-enough-1', 'long-enough-2');
+    fill('correct-password', 'long-enough-1', 'long-enough-2');
     expect(screen.getByText("Passwords don't match.")).toBeTruthy();
+    expect(holder.fake.state.calls.some((c) => c.path === '/auth/change-password')).toBe(false);
   });
 
-  it('saves the new password, clears the flag and opens the dashboard', async () => {
-    const updateUser = vi.spyOn(holder.fake.client.auth, 'updateUser');
+  it('shows the server error for a wrong current password', async () => {
     renderAt('/');
     await signInViaForm();
     await screen.findByLabelText('New password');
-    fill('long-enough-1', 'long-enough-1');
-    await waitFor(() => expect(updateUser).toHaveBeenCalledWith({ password: 'long-enough-1' }));
-    expect(holder.fake.state.rpcCalls).toEqual([{ name: 'clear_password_flag', args: undefined }]);
+    fill('not-it', 'long-enough-1', 'long-enough-1');
+    expect(await screen.findByText('Your current password is incorrect.')).toBeTruthy();
+  });
+
+  it('saves the new password and opens the dashboard', async () => {
+    renderAt('/');
+    await signInViaForm();
+    await screen.findByLabelText('New password');
+    fill('correct-password', 'long-enough-1', 'long-enough-1');
+    await waitFor(() =>
+      expect(holder.fake.state.calls).toContainEqual({
+        method: 'POST',
+        path: '/auth/change-password',
+        body: { current_password: 'correct-password', new_password: 'long-enough-1' },
+      }),
+    );
     expect(await screen.findByText('Welcome, Aisha')).toBeTruthy();
   });
 });
 
-describe('no email features', () => {
-  it('has no email-based password reset', async () => {
-    renderAt('/login');
-    await screen.findByRole('heading', { name: 'Sign in to MEDIUM Admin' });
-    expect(screen.queryByText(/Forgot password/)).toBeNull();
-    expect(screen.getByText('Forgot your password? Ask a MEDIUM admin to set a temporary one.')).toBeTruthy();
+describe('my account', () => {
+  it('lets anyone change their password at any time', async () => {
+    holder.fake = createFakeApi({ users: [makeUser()], signedInAs: 'u-admin' });
+    renderAt('/account');
+    fireEvent.change(await screen.findByLabelText('Current password'), { target: { value: 'correct-password' } });
+    fireEvent.change(screen.getByLabelText('New password'), { target: { value: 'long-enough-1' } });
+    fireEvent.change(screen.getByLabelText('Confirm new password'), { target: { value: 'long-enough-1' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save password' }));
+    expect(await screen.findByText('Password changed.')).toBeTruthy();
   });
 });

@@ -7,11 +7,12 @@ import { ROLE_LABELS } from '../lib/types';
 const DESCRIPTIONS: Record<string, string> = {
   staff: 'Invite staff, change roles and deactivate accounts.',
   activity: 'See who changed what, and when.',
+  account: 'Your details and password.',
 };
 
 export default function DashboardPage() {
-  const { profile, role } = useAuth();
-  const firstName = profile?.full_name.split(' ')[0] ?? '';
+  const { user, role } = useAuth();
+  const firstName = user?.full_name.split(' ')[0] ?? '';
   const shortcuts = NAV_ITEMS.filter((item) => item.id !== 'dashboard' && role && item.roles.includes(role));
 
   return (

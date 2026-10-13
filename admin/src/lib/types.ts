@@ -1,5 +1,4 @@
-// Mirrors the database schema in supabase/migrations (spec §3).
-// Task 1 generates database.types.ts from the real database; keep these in step with it.
+// Shapes returned by the MEDIUM server (server/src).
 
 export type StaffRole = 'admin' | 'sales' | 'events' | 'finance';
 
@@ -10,24 +9,34 @@ export const ROLE_LABELS: Record<StaffRole, string> = {
   finance: 'Finance',
 };
 
-export interface Profile {
+// GET /api/auth/me
+export interface SessionUser {
+  id: string;
+  email: string;
+  full_name: string;
+  role: StaffRole;
+  must_change_password: boolean;
+}
+
+// GET /api/staff — admins get every field, others id/full_name/role/active
+export interface StaffMember {
   id: string;
   full_name: string;
-  email: string;
   role: StaffRole;
   active: boolean;
-  // Set when an admin creates the account or resets the password; cleared once the user picks their own
-  must_change_password: boolean;
-  created_at: string;
-  updated_at: string | null;
+  email?: string;
+  must_change_password?: boolean;
+  last_login_at?: string | null;
+  created_at?: string;
 }
 
 export interface ActivityRow {
   id: number;
   at: string;
   actor_id: string | null;
-  table_name: string;
-  record_id: string;
-  action: 'insert' | 'update' | 'delete';
+  actor_name: string | null;
+  entity: string;
+  entity_id: string;
+  action: 'create' | 'update' | 'delete' | 'login' | 'publish' | 'export';
   changes: Record<string, unknown>;
 }

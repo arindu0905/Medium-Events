@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { validateCreateStaff, validateResetPassword } from '../../../supabase/functions/manage-staff/validate.ts';
+import { validateCreateStaff, validateResetPassword } from './staffValidation';
 
 const good = { email: '  Aisha@Medium.MV ', full_name: '  Aisha Ali ', role: 'sales', temp_password: 'Temporary-123' };
 

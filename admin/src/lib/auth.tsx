@@ -1,94 +1,92 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { supabase } from './supabase';
-import type { Profile, StaffRole } from './types';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { ApiError, api, onApiError } from './api';
+import type { SessionUser, StaffRole } from './types';
 
-export const DEACTIVATED_MESSAGE = 'Your account is deactivated. Contact a MEDIUM admin.';
-const NO_PROFILE_MESSAGE = 'Your account is not set up yet. Contact a MEDIUM admin.';
-
-type Session = { user: { id: string; email?: string } } | null;
+export const SESSION_ENDED_MESSAGE = 'Your session has ended. Sign in again.';
 
 interface AuthValue {
-  session: Session;
-  profile: Profile | null;
+  user: SessionUser | null;
   role: StaffRole | null;
   loading: boolean;
   notice: string | null;
   signIn(email: string, password: string): Promise<string | null>;
   signOut(): Promise<void>;
-  refreshProfile(): Promise<void>;
+  // Re-reads the signed-in user, so role changes and deactivations take effect without signing in again
+  refresh(): Promise<void>;
 }
 
 const AuthContext = createContext<AuthValue | null>(null);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [session, setSession] = useState<Session>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [user, setUser] = useState<SessionUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [notice, setNotice] = useState<string | null>(null);
+  const signedIn = useRef(false);
 
-  // Loads the signed-in user's profile; signs out anyone without an active profile
-  const loadProfile = useCallback(async (userId: string) => {
-    const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
-    const found = data as Profile | null;
-    if (error || !found || !found.active) {
-      setNotice(found && !found.active ? DEACTIVATED_MESSAGE : NO_PROFILE_MESSAGE);
-      setProfile(null);
-      setSession(null);
-      await supabase.auth.signOut();
-    } else {
-      setProfile(found);
-    }
-    setLoading(false);
+  const applyUser = useCallback((next: SessionUser | null) => {
+    signedIn.current = next !== null;
+    setUser(next);
   }, []);
 
+  const refresh = useCallback(async () => {
+    try {
+      applyUser(await api.get<SessionUser>('/auth/me'));
+    } catch (e) {
+      // A 401 is handled by the listener below; other failures (server down) keep the current state
+      if (!(e instanceof ApiError) || e.status !== 401) return;
+    } finally {
+      setLoading(false);
+    }
+  }, [applyUser]);
+
   useEffect(() => {
-    let cancelled = false;
-    supabase.auth.getSession().then(({ data }) => {
-      if (cancelled) return;
-      const current = data.session as Session;
-      setSession(current);
-      if (current) loadProfile(current.user.id);
-      else setLoading(false);
-    });
-    const { data } = supabase.auth.onAuthStateChange((event, next) => {
-      if (event === 'SIGNED_OUT' || !next) {
-        setSession(null);
-        setProfile(null);
-        setLoading(false);
-        return;
-      }
-      if (event === 'SIGNED_IN') {
-        setSession(next as Session);
-        loadProfile((next as NonNullable<Session>).user.id);
-      }
-    });
-    return () => {
-      cancelled = true;
-      data.subscription.unsubscribe();
-    };
-  }, [loadProfile]);
+    refresh();
+  }, [refresh]);
+
+  // Any request can find the session gone (expired, deactivated, reset by an admin)
+  // or the password change still pending.
+  useEffect(
+    () =>
+      onApiError((error) => {
+        if (error.status === 401 && signedIn.current) {
+          applyUser(null);
+          setNotice(SESSION_ENDED_MESSAGE);
+        } else if (error.status === 401) {
+          applyUser(null);
+        } else if (error.status === 403 && error.message === 'password_change_required') {
+          refresh();
+        }
+      }),
+    [applyUser, refresh],
+  );
 
   const value = useMemo<AuthValue>(
     () => ({
-      session,
-      profile,
-      role: profile?.role ?? null,
+      user,
+      role: user?.role ?? null,
       loading,
       notice,
       async signIn(email, password) {
         setNotice(null);
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        return error ? 'Email or password is incorrect.' : null;
+        try {
+          await api.post('/auth/login', { email, password });
+          applyUser(await api.get<SessionUser>('/auth/me'));
+          return null;
+        } catch (e) {
+          return e instanceof ApiError ? e.message : 'Something went wrong. Try again.';
+        }
       },
       async signOut() {
         setNotice(null);
-        await supabase.auth.signOut();
+        try {
+          await api.post('/auth/logout');
+        } finally {
+          applyUser(null);
+        }
       },
-      async refreshProfile() {
-        if (session) await loadProfile(session.user.id);
-      },
+      refresh,
     }),
-    [session, profile, loading, notice, loadProfile],
+    [user, loading, notice, applyUser, refresh],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

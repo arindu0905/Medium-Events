@@ -10,6 +10,7 @@ import DashboardPage from './pages/DashboardPage';
 import NotFoundPage from './pages/NotFoundPage';
 import StaffPage from './pages/StaffPage';
 import ActivityPage from './pages/ActivityPage';
+import AccountPage from './pages/AccountPage';
 
 export function AdminRoutes() {
   return (
@@ -22,6 +23,7 @@ export function AdminRoutes() {
             <Route index element={<DashboardPage />} />
             <Route path="/staff" element={<RequireAuth roles={rolesFor('staff')}><StaffPage /></RequireAuth>} />
             <Route path="/activity" element={<RequireAuth roles={rolesFor('activity')}><ActivityPage /></RequireAuth>} />
+            <Route path="/account" element={<AccountPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Route>

@@ -2,8 +2,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { UserPlus } from 'lucide-react';
 import { useAuth } from '../lib/auth';
 import { createStaff, listStaff, resetStaffPassword, updateStaff } from '../lib/staff';
-import { validateCreateStaff, validateResetPassword } from '../../../supabase/functions/manage-staff/validate.ts';
-import { ROLE_LABELS, type Profile, type StaffRole } from '../lib/types';
+import { validateCreateStaff, validateResetPassword } from '../lib/staffValidation';
+import { ROLE_LABELS, type StaffMember, type StaffRole } from '../lib/types';
 
 const ROLES = Object.keys(ROLE_LABELS) as StaffRole[];
 const FIELD =
@@ -15,13 +15,13 @@ const SECONDARY =
 const SELF_TITLE = "You can't change your own access";
 
 export default function StaffPage() {
-  const { profile: me } = useAuth();
-  const [staff, setStaff] = useState<Profile[]>([]);
+  const { user: me } = useAuth();
+  const [staff, setStaff] = useState<StaffMember[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [message, setMessage] = useState<{ kind: 'error' | 'success'; text: string } | null>(null);
-  const [confirming, setConfirming] = useState<Profile | null>(null);
+  const [confirming, setConfirming] = useState<StaffMember | null>(null);
   const [addOpen, setAddOpen] = useState(false);
-  const [resetting, setResetting] = useState<Profile | null>(null);
+  const [resetting, setResetting] = useState<StaffMember | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -36,7 +36,7 @@ export default function StaffPage() {
     load();
   }, [load]);
 
-  const save = async (person: Profile, patch: { role?: StaffRole; active?: boolean }) => {
+  const save = async (person: StaffMember, patch: { role?: StaffRole; active?: boolean }) => {
     setMessage(null);
     const result = await updateStaff(person.id, patch);
     if (result.ok) {
@@ -173,7 +173,7 @@ export default function StaffPage() {
                       <button
                         type="button"
                         disabled={isMe}
-                        title={isMe ? 'Change your own password from the password page' : undefined}
+                        title={isMe ? 'Change your own password from My account' : undefined}
                         onClick={() => setResetting(person)}
                         className={SECONDARY}
                       >
@@ -271,7 +271,7 @@ function AddStaffForm({ onClose, onCreated }: { onClose: () => void; onCreated: 
   );
 }
 
-function ResetPasswordForm({ person, onClose, onDone }: { person: Profile; onClose: () => void; onDone: (name: string) => void }) {
+function ResetPasswordForm({ person, onClose, onDone }: { person: StaffMember; onClose: () => void; onDone: (name: string) => void }) {
   const [tempPassword, setTempPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);

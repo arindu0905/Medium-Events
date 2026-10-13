@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router';
-import { Activity, LayoutDashboard, LogOut, Menu, Users, X } from 'lucide-react';
+import { Activity, CircleUser, LayoutDashboard, LogOut, Menu, Users, X } from 'lucide-react';
 import { useAuth } from '../lib/auth';
 import { NAV_ITEMS, type SectionId } from '../lib/permissions';
 import { ROLE_LABELS } from '../lib/types';
@@ -9,10 +9,11 @@ const ICONS: Record<SectionId, React.FC<{ className?: string }>> = {
   dashboard: LayoutDashboard,
   staff: Users,
   activity: Activity,
+  account: CircleUser,
 };
 
 export const Layout: React.FC = () => {
-  const { profile, role, signOut } = useAuth();
+  const { user, role, signOut } = useAuth();
   const { pathname } = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -62,7 +63,7 @@ export const Layout: React.FC = () => {
           </button>
           <span className="lg:hidden font-semibold text-ink">MEDIUM Admin</span>
           <div className="ml-auto flex items-center gap-3 text-sm">
-            <span className="hidden sm:inline font-medium text-ink">{profile?.full_name}</span>
+            <span className="hidden sm:inline font-medium text-ink">{user?.full_name}</span>
             {role && (
               <span className="rounded-md bg-brand-tint px-2 py-0.5 text-xs font-semibold text-brand">{ROLE_LABELS[role]}</span>
             )}

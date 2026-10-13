@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../lib/auth';
 import { listStaff } from '../lib/staff';
-import { PAGE_SIZE, actionLabel, formatWhen, listActivity, summariseChanges, tableLabel, type ActivityFilters } from '../lib/activity';
-import type { ActivityRow, Profile } from '../lib/types';
+import { ACTION_LABELS, PAGE_SIZE, actionLabel, entityLabel, formatWhen, listActivity, summariseChanges, type ActivityFilters } from '../lib/activity';
+import type { ActivityRow, StaffMember } from '../lib/types';
 
 const FIELD =
   'w-full rounded-md border border-line bg-white px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand';
@@ -15,12 +15,13 @@ export default function ActivityPage() {
   const [filters, setFilters] = useState<ActivityFilters>({ page: 0 });
   const [rows, setRows] = useState<ActivityRow[]>([]);
   const [total, setTotal] = useState(0);
-  const [staff, setStaff] = useState<Profile[] | null>(null);
+  const [staff, setStaff] = useState<StaffMember[]>([]);
   const [error, setError] = useState<string | null>(null);
 
+  // Only admins can filter by person
   useEffect(() => {
-    listStaff().then(setStaff, () => setStaff([]));
-  }, []);
+    if (isAdmin) listStaff().then(setStaff, () => setStaff([]));
+  }, [isAdmin]);
 
   useEffect(() => {
     let cancelled = false;
@@ -38,9 +39,8 @@ export default function ActivityPage() {
     };
   }, [filters]);
 
-  const names = useMemo(() => new Map((staff ?? []).map((p) => [p.id, p.full_name])), [staff]);
-  // Until names load, show nothing rather than wrongly calling someone a former member of staff
-  const who = (actorId: string | null) => (!actorId ? 'System' : (names.get(actorId) ?? (staff ? 'Former staff' : '')));
+  // The server joins the actor's name; a missing name means the account no longer exists
+  const who = (row: ActivityRow) => (!row.actor_id ? 'System' : (row.actor_name ?? 'Former staff'));
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   // Any filter change starts again from the first page
   const setFilter = (patch: Partial<ActivityFilters>) => setFilters((f) => ({ ...f, ...patch, page: 0 }));
@@ -48,7 +48,7 @@ export default function ActivityPage() {
   return (
     <section>
       <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink">Activity log</h1>
-      <p className="mt-1 text-body">{isAdmin ? 'Every change made in the admin system.' : 'Showing your own changes.'}</p>
+      <p className="mt-1 text-body">{isAdmin ? 'Every change made in the admin system.' : 'Showing your own activity.'}</p>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {isAdmin && (
@@ -56,7 +56,7 @@ export default function ActivityPage() {
             <label htmlFor="f-person" className="block text-sm font-semibold text-ink mb-1.5">Person</label>
             <select id="f-person" value={filters.actorId ?? ''} onChange={(e) => setFilter({ actorId: e.target.value || undefined })} className={FIELD}>
               <option value="">Everyone</option>
-              {(staff ?? []).map((p) => (
+              {staff.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.full_name}
                 </option>
@@ -68,9 +68,11 @@ export default function ActivityPage() {
           <label htmlFor="f-action" className="block text-sm font-semibold text-ink mb-1.5">Action</label>
           <select id="f-action" value={filters.action ?? ''} onChange={(e) => setFilter({ action: e.target.value || undefined })} className={FIELD}>
             <option value="">All actions</option>
-            <option value="insert">Created</option>
-            <option value="update">Updated</option>
-            <option value="delete">Deleted</option>
+            {Object.entries(ACTION_LABELS).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
           </select>
         </div>
         <div>
@@ -103,9 +105,9 @@ export default function ActivityPage() {
               {rows.map((row) => (
                 <tr key={row.id}>
                   <td className="px-4 py-3 whitespace-nowrap text-body">{formatWhen(row.at)}</td>
-                  <td className="px-4 py-3 font-medium text-ink">{who(row.actor_id)}</td>
+                  <td className="px-4 py-3 font-medium text-ink">{who(row)}</td>
                   <td className="px-4 py-3 text-body">{actionLabel(row.action)}</td>
-                  <td className="px-4 py-3 text-body">{tableLabel(row.table_name)}</td>
+                  <td className="px-4 py-3 text-body">{entityLabel(row.entity)}</td>
                   <td className="px-4 py-3 text-body break-words">{summariseChanges(row)}</td>
                 </tr>
               ))}
