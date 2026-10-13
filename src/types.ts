@@ -9,7 +9,8 @@ export interface ServiceItem {
 export interface PastEvent {
   id: string;
   name: string;
-  series: 'Aviation Forum' | 'Construction Industry Forum' | 'Marine Industry Forum' | 'Build Expo';
+  // The series' card label, e.g. 'Aviation Forum' (EventSeries.series)
+  series: string;
   date: string;
   isoDate: string;
   venue: string;

@@ -1,4 +1,5 @@
 import { ServiceItem, NewsArticle, PastEvent, EventSeries } from '../types';
+import { PUBLISHED, choosePublished } from './published';
 
 export const COMPANY_DETAILS = {
   name: 'MEDIUM Events Pvt Ltd',
@@ -78,7 +79,7 @@ export const SERVICES_DATA: ServiceItem[] = [
 ];
 
 // Events hosted by MEDIUM, as listed on facebook.com/MediumMv (Events → Past)
-export const PAST_EVENTS_DATA: PastEvent[] = [
+const BUILT_IN_EVENTS: PastEvent[] = [
   {
     id: 'af-2026',
     name: 'Aviation Forum 2026',
@@ -236,7 +237,7 @@ export const NEWS_ARTICLES_DATA: NewsArticle[] = [
 
 
 // Event series MEDIUM organises. Facts from the series' Facebook events, posts and banners.
-export const EVENT_SERIES: EventSeries[] = [
+const BUILT_IN_SERIES: EventSeries[] = [
   {
     slug: 'construction-industry-forum',
     name: 'Construction Industry Forum',
@@ -316,18 +317,24 @@ export function seriesBySlug(slug: string): EventSeries | undefined {
   return EVENT_SERIES.find((s) => s.slug === slug);
 }
 
-export const VERIFIED_PARTNERS = [
+const BUILT_IN_PARTNERS = [
   { name: 'MNACI', role: 'Endorsing association, CIF and Build Expo' },
   { name: 'Ooredoo Maldives', role: 'Exclusive Platinum Sponsor, CIF 2026' },
   { name: 'SITA', role: 'Sponsor, Aviation Forum 2026' },
 ];
+
+// Events published from the MEDIUM admin replace the built-in lists above (src/data/published.ts)
+const EVENT_DATA = choosePublished(PUBLISHED, { series: BUILT_IN_SERIES, events: BUILT_IN_EVENTS, partners: BUILT_IN_PARTNERS });
+export const EVENT_SERIES: EventSeries[] = EVENT_DATA.series;
+export const PAST_EVENTS_DATA: PastEvent[] = EVENT_DATA.events;
+export const VERIFIED_PARTNERS = EVENT_DATA.partners;
 
 const firstEventYear = PAST_EVENTS_DATA.map((e) => e.isoDate.slice(0, 4)).sort()[0];
 
 export const SITE_STATS = [
   { value: String(PAST_EVENTS_DATA.length), label: 'events hosted' },
   { value: String(EVENT_SERIES.length), label: 'event series' },
-  { value: firstEventYear, label: 'first forum' },
+  ...(firstEventYear ? [{ value: firstEventYear, label: 'first forum' }] : []),
   { value: '60+', label: 'years combined experience' },
 ];
 

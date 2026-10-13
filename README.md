@@ -41,6 +41,7 @@ Pages are listed once in `src/routes.ts`. Adding a page there adds it to the rou
 | `VITE_SITE_URL` | Live address, e.g. `https://medium.mv`. Used for canonical links, share previews and the sitemap. | Defaults to `https://medium.mv` |
 | `VITE_WEB3FORMS_KEY` | Access key from [web3forms.com](https://web3forms.com). Enquiries are emailed to the address the key was created with. | The enquiry form sends via WhatsApp or email instead |
 | `VITE_GA_ID` | Google Analytics 4 measurement ID (`G-XXXXXXX`). | No analytics are loaded |
+| `VITE_ADMIN_API_URL` | Address of the MEDIUM admin server, e.g. `https://admin.medium.mv`. The build uses events published from the admin. | Built-in event list |
 
 ### One-time setup for MEDIUM
 
@@ -82,6 +83,12 @@ Open http://localhost:3010 (or use **Staff login** in the website footer). The a
 
 - **Default:** a local Postgres database in `server/.data/` (created automatically, git-ignored). Back it up by copying the folder while the server is stopped.
 - **Supabase:** copy `server/.env.example` to `server/.env` and set `DATABASE_URL` to the Supabase connection string (Project Settings > Database > Connection string > Session pooler, with your database password). Tables are created on start-up. Backups are handled by Supabase. Never put the connection string or any Supabase key in the website or admin app.
+
+### Events on the website
+
+- Staff manage event series, editions, banners and partners under **Events**. The admin starts with MEDIUM's nine past events, copied from the website.
+- **Publish** sends them to the website: set `VITE_ADMIN_API_URL` (the admin server's address) in the website's `.env`, and `npm run build` downloads the published events and banners before building. Without it, or before the first publish, the site uses its built-in event list.
+- To rebuild the site automatically after publishing, set `SITE_DEPLOY_HOOK_URL` in `server/.env` to your host's deploy hook (Netlify, Vercel and Cloudflare Pages all provide one), and `PUBLIC_SITE_ORIGIN` to the website's address.
 
 ### Production
 
