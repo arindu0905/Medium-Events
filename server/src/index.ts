@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { openDb } from './db/index.js';
 import { migrate } from './db/migrate.js';
 import { createApp } from './app.js';
+import { DEFAULT_ADMIN_EMAIL, defaultAdminPending, ensureDefaultAdmin } from './bootstrap.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const url = process.env.DATABASE_URL?.trim() || undefined;
@@ -16,6 +17,13 @@ if (!url) mkdirSync(dataDir, { recursive: true });
 const db = await openDb({ url, dataDir });
 const applied = await migrate(db, join(root, 'migrations'));
 if (applied.length) console.log(`Applied migrations: ${applied.join(', ')}`);
+
+if ((await ensureDefaultAdmin(db, process.env.DEFAULT_ADMIN_PASSWORD?.trim())) === 'created') {
+  console.log(`Created the default admin: ${DEFAULT_ADMIN_EMAIL}`);
+}
+if (await defaultAdminPending(db)) {
+  console.warn(`WARNING: ${DEFAULT_ADMIN_EMAIL} still uses the default password. Sign in and change it.`);
+}
 
 const port = Number(process.env.PORT ?? 3020);
 createApp({ db }).listen(port, () => {
