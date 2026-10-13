@@ -17,6 +17,10 @@ import EditionPage from './pages/EditionPage';
 import PublishPage from './pages/PublishPage';
 import EnquiriesPage from './pages/EnquiriesPage';
 import EnquiryPage from './pages/EnquiryPage';
+import SponsorsPage from './pages/SponsorsPage';
+import SponsorPage from './pages/SponsorPage';
+import DealsPage from './pages/DealsPage';
+import DealPage from './pages/DealPage';
 
 export function AdminRoutes() {
   return (
@@ -39,6 +43,14 @@ export function AdminRoutes() {
             <Route element={<RequireAuth roles={rolesFor('enquiries')} />}>
               <Route path="/enquiries" element={<EnquiriesPage />} />
               <Route path="/enquiries/:id" element={<EnquiryPage />} />
+            </Route>
+            <Route element={<RequireAuth roles={rolesFor('sponsors')} />}>
+              <Route path="/sponsors" element={<SponsorsPage />} />
+              <Route path="/sponsors/:id" element={<SponsorPage />} />
+            </Route>
+            <Route element={<RequireAuth roles={rolesFor('deals')} />}>
+              <Route path="/deals" element={<DealsPage />} />
+              <Route path="/deals/:id" element={<DealPage />} />
             </Route>
             <Route path="/publish" element={<RequireAuth roles={rolesFor('publish')}><PublishPage /></RequireAuth>} />
             <Route path="*" element={<NotFoundPage />} />

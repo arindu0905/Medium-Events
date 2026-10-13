@@ -127,3 +127,56 @@ export interface EnquiryNote {
   body: string;
   created_at: string;
 }
+
+// ---- sponsors, deals, payments (server/src/sales/routes.ts) ----
+export type Currency = 'MVR' | 'USD';
+export type DealStatus = 'proposed' | 'confirmed' | 'cancelled';
+export type PaymentMethod = 'bank_transfer' | 'cash' | 'cheque' | 'card' | 'other';
+
+export interface Sponsor {
+  id: string;
+  company: string;
+  contact_name: string;
+  email: string;
+  phone: string;
+  notes: string;
+  created_at: string;
+  deal_count: number;
+}
+
+// Money fields are left out for roles that can't see amounts (events)
+export interface Deal {
+  id: string;
+  sponsor_id: string;
+  sponsor_company: string;
+  edition_id: string;
+  edition_name: string;
+  package: string;
+  status: DealStatus;
+  enquiry_id: string | null;
+  created_at: string;
+  notes?: string;
+  amount?: number;
+  currency?: Currency;
+  paid?: number;
+  outstanding?: number;
+}
+
+export interface DealTotal {
+  currency: Currency;
+  amount: number;
+  paid: number;
+  outstanding: number;
+}
+
+export interface Payment {
+  id: string;
+  deal_id: string;
+  amount: number;
+  paid_on: string;
+  method: PaymentMethod;
+  invoice_no: string;
+  notes: string;
+  recorded_by_name: string | null;
+  created_at: string;
+}

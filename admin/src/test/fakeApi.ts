@@ -2,9 +2,10 @@
 // Mirrors the server's rules closely enough for the UI: sign-in, forced password change, staff, activity,
 // plus each section's handlers (fakeEvents, fakeEnquiries, …).
 import { ApiError, reportApiError } from '../lib/api';
-import type { ActivityRow, Edition, Partner, PublishInfo, Series, StaffMember, StaffRole } from '../lib/types';
+import type { ActivityRow, Deal, Edition, Payment, Sponsor, Partner, PublishInfo, Series, StaffMember, StaffRole } from '../lib/types';
 import { NOT_HANDLED, handleEvents } from './fakeEvents';
 import { handleEnquiries, type FakeEnquiry } from './fakeEnquiries';
+import { handleSales } from './fakeSales';
 
 export interface FakeUser extends Required<Omit<StaffMember, 'last_login_at' | 'created_at'>> {
   password: string;
@@ -34,6 +35,9 @@ export function createFakeApi(
     partners?: Partner[];
     published?: PublishInfo | null;
     enquiries?: FakeEnquiry[];
+    sponsors?: Sponsor[];
+    deals?: Deal[];
+    payments?: Payment[];
   } = {},
 ) {
   const state = {
@@ -47,6 +51,9 @@ export function createFakeApi(
     files: [] as { id: string; filename: string; type: string }[],
     published: init.published ?? null,
     enquiries: (init.enquiries ?? []).map((x) => ({ ...x, notes: [...x.notes] })),
+    sponsors: (init.sponsors ?? []).map((x) => ({ ...x })),
+    deals: (init.deals ?? []).map((x) => ({ ...x })),
+    payments: (init.payments ?? []).map((x) => ({ ...x })),
     calls: [] as { method: string; path: string; body?: unknown }[],
     // Set to make the next matching call fail
     failNext: null as null | { status: number; error: string },
@@ -135,6 +142,8 @@ export function createFakeApi(
     const staffName = (id: string | null) => state.users.find((u) => u.id === id)?.full_name ?? null;
     const enquiries = handleEnquiries(state, user, staffName, method, route, new URLSearchParams(query), body, fail, nextId);
     if (enquiries !== NOT_HANDLED) return enquiries;
+    const sales = handleSales(state, user, method, route, new URLSearchParams(query), body, fail, nextId);
+    if (sales !== NOT_HANDLED) return sales;
     return fail(404, 'Not found.');
   }
 
