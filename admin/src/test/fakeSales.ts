@@ -55,7 +55,7 @@ export function handleSales(
   const view = (d: Deal): Deal => {
     const paid = paidOf(d.id);
     const full = { ...d, paid, outstanding: (d.amount ?? 0) - paid };
-    return can(me.role, 'deals.readAmounts') ? full : (Object.fromEntries(Object.entries(full).filter(([k]) => !MONEY.includes(k))) as Deal);
+    return can(me.role, 'deals.readAmounts') ? full : (Object.fromEntries(Object.entries(full).filter(([k]) => !MONEY.includes(k))) as unknown as Deal);
   };
 
   if (area === 'sponsors') {
