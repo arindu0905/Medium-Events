@@ -135,6 +135,16 @@ describe('deals', () => {
   });
 });
 
+describe('editions with deals', () => {
+  it('cannot be deleted while they have deals', async () => {
+    await deal();
+    const res = await s.as.admin.delete(`/api/editions/${editionId}`);
+    expect(res.status).toBe(409);
+    expect(res.body.error).toBe('This edition has sponsorship deals. Cancel it instead, or move its deals first.');
+    expect((await s.as.admin.get(`/api/editions/${editionId}`)).status).toBe(200);
+  });
+});
+
 describe('payments', () => {
   it('records payments and updates what is outstanding', async () => {
     const d = await deal({ amount: 1000, currency: 'USD' });

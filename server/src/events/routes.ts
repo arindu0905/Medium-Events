@@ -250,6 +250,9 @@ export function eventRoutes(ctx: AppContext) {
     route(async (req, res) => {
       const before = await one(ctx.db, EDITION, req.params.id, 'That edition was not found.');
       await change(res, 'editions', async (tx) => {
+        if ((await tx.query('select 1 from deals where edition_id = $1', [req.params.id])).length) {
+          throw new HttpError(409, 'This edition has sponsorship deals. Cancel it instead, or move its deals first.');
+        }
         await tx.query('delete from editions where id = $1', [req.params.id]);
         return { id: req.params.id, action: 'delete', changes: { name: before.name } };
       });
