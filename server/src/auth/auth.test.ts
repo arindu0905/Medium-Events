@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import request from 'supertest';
 import { PASSWORD, createUser, setup, signedIn } from '../test/helpers.js';
+import { createApp } from '../app.js';
 import { DEFAULT_ADMIN_EMAIL, DEFAULT_ADMIN_PASSWORD, ensureDefaultAdmin } from '../bootstrap.js';
 
 let t: Awaited<ReturnType<typeof setup>>;
@@ -80,6 +81,13 @@ describe('login', () => {
     expect(locked.body).toEqual({ error: 'Too many attempts. Try again in 15 minutes.' });
     t.advance(15 * MIN + 1000);
     expect((await request(t.app).post('/api/auth/login').send({ email: 'sam@medium.mv', password: PASSWORD })).status).toBe(200);
+  });
+
+  it('shares the lockout between server instances on the same database', async () => {
+    await createUser(t.db, { email: 'sam@medium.mv' });
+    const other = createApp({ db: t.db, now: () => t.clock.now });
+    for (let i = 0; i < 5; i++) await request(i % 2 ? other : t.app).post('/api/auth/login').send({ email: 'sam@medium.mv', password: 'wrong' });
+    expect((await request(other).post('/api/auth/login').send({ email: 'sam@medium.mv', password: PASSWORD })).status).toBe(429);
   });
 
   it('rejects a missing or malformed body', async () => {

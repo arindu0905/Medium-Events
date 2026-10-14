@@ -6,7 +6,8 @@ import { currentUser, requirePermission } from '../auth/middleware.js';
 import { HttpError, route } from '../http.js';
 
 export const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+// Under Vercel's 4.5 MB request body limit for functions
+export const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export const isUuid = (value: string) => UUID.test(value);
 
@@ -14,7 +15,7 @@ export const isUuid = (value: string) => UUID.test(value);
 const rawImage = [
   express.raw({ type: () => true, limit: MAX_IMAGE_BYTES }),
   (err: { type?: string }, _req: Request, _res: Response, next: NextFunction) =>
-    next(err.type === 'entity.too.large' ? new HttpError(413, 'Images must be 5 MB or smaller.') : err),
+    next(err.type === 'entity.too.large' ? new HttpError(413, 'Images must be 4 MB or smaller.') : err),
 ];
 
 export async function sendFile(db: Db, id: string, res: Response, cacheControl: string) {

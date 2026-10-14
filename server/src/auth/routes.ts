@@ -15,7 +15,7 @@ const changeBody = z.object({ current_password: z.string(), new_password: z.stri
 // /api/auth/login is public; the rest of this router runs behind requireAuth (see app.ts)
 export function publicAuthRoutes(ctx: AppContext) {
   const router = Router();
-  const lockout = new Lockout();
+  const lockout = new Lockout(ctx.db);
 
   router.post('/login', async (req, res, next) => {
     try {
@@ -23,7 +23,7 @@ export function publicAuthRoutes(ctx: AppContext) {
       if (!parsed.success) return res.status(400).json({ error: 'Enter your email and password.' });
       const { email, password } = parsed.data;
       const now = ctx.now();
-      if (lockout.isLocked(email, now)) return res.status(429).json({ error: 'Too many attempts. Try again in 15 minutes.' });
+      if (await lockout.isLocked(email, now)) return res.status(429).json({ error: 'Too many attempts. Try again in 15 minutes.' });
 
       const [user] = await ctx.db.query<{ id: string; password_hash: string; active: boolean }>(
         'select id, password_hash, active from users where email = $1',
@@ -31,11 +31,11 @@ export function publicAuthRoutes(ctx: AppContext) {
       );
       const ok = user ? (await verifyPassword(password, user.password_hash)) && user.active : await verifyAgainstDummy(password);
       if (!ok) {
-        lockout.recordFailure(email, now);
+        await lockout.recordFailure(email, now);
         return res.status(401).json({ error: INCORRECT });
       }
 
-      lockout.reset(email);
+      await lockout.reset(email);
       const token = await ctx.db.transaction(async (tx) => {
         await tx.query('update users set last_login_at = $2 where id = $1', [user!.id, now]);
         await recordActivity(tx, { actorId: user!.id, entity: 'session', entityId: user!.id, action: 'login', at: now });

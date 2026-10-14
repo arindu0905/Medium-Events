@@ -112,6 +112,10 @@ Open http://localhost:3010 (or use **Staff login** in the website footer). The a
 
 Build both with `npm --prefix server run build` and `npm --prefix admin run build`, then run `npm --prefix server start` with `NODE_ENV=production` on any Node 22 host (Render, Railway, Fly.io, a VPS). In production the server also serves the built admin app, so one address (e.g. `https://admin.medium.mv`) gives both the app and `/api`, and the session cookie is HTTPS-only. Set `DATABASE_URL` to Supabase there. On the website, set `VITE_ADMIN_URL` (footer Staff login link) and `VITE_ADMIN_API_URL` (published events and enquiries) to that address.
 
+### Production on Vercel
+
+The server can also run on Vercel as a serverless function, with the admin app as static files, from one address. Create a second Vercel project from the same repository with **Root Directory** set to `server` (keep "Include files outside the root directory" on; `server/vercel.json` does the rest). Set `DATABASE_URL` (Supabase **transaction pooler**, port 6543), `DEFAULT_ADMIN_PASSWORD`, `PUBLIC_SITE_ORIGIN` and optionally `SITE_DEPLOY_HOOK_URL` in that project. Each build runs the migrations (`npm --prefix server run db:setup`), so the database must be reachable at build time; preview deployments use the same database unless you give them their own `DATABASE_URL`.
+
 | Command | What it does |
 |---|---|
 | `npm --prefix server test` | Server tests (sign-in, permissions for every role, events, publishing, enquiries, sponsors, deals, payments, reports) |

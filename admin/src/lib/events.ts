@@ -7,7 +7,7 @@ export type EditionInput = Omit<Edition, 'id' | 'series_name'>;
 export type PartnerInput = Pick<Partner, 'name' | 'role'> & Partial<Pick<Partner, 'series_id' | 'edition_id' | 'sort_order'>>;
 
 export const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+export const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 
 export const listSeries = () => api.get<Series[]>('/series');
 export const getSeries = (id: string) => api.get<Series>(`/series/${id}`);
@@ -30,7 +30,7 @@ export const deletePartner = (id: string) => attempt(() => api.del(`/partners/${
 // Checks type and size in the browser first; the server checks again
 export function checkImage(file: File): string | null {
   if (!IMAGE_TYPES.includes(file.type)) return 'Upload a JPG, PNG or WebP image.';
-  if (file.size > MAX_IMAGE_BYTES) return 'Images must be 5 MB or smaller.';
+  if (file.size > MAX_IMAGE_BYTES) return 'Images must be 4 MB or smaller.';
   return null;
 }
 

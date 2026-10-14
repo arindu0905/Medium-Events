@@ -37,10 +37,10 @@ describe('files', () => {
     expect(res.body.error).toBe('Upload a JPG, PNG or WebP image.');
   });
 
-  it('refuses images over 5 MB', async () => {
-    const res = await upload('admin', Buffer.alloc(5 * 1024 * 1024 + 1), 'image/png', 'big.png');
+  it('refuses images over 4 MB', async () => {
+    const res = await upload('admin', Buffer.alloc(4 * 1024 * 1024 + 1), 'image/png', 'big.png');
     expect(res.status).toBe(413);
-    expect(res.body.error).toBe('Images must be 5 MB or smaller.');
+    expect(res.body.error).toBe('Images must be 4 MB or smaller.');
   });
 
   it('returns 404 for an unknown file', async () => {

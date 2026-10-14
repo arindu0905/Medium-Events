@@ -12,8 +12,9 @@ export interface Db {
   close(): Promise<void>;
 }
 
-export async function openDb(opts: { url?: string; dataDir?: string | 'memory' }): Promise<Db> {
-  return opts.url ? openPg(opts.url) : openPglite(opts.dataDir ?? 'memory');
+// poolMax: connections per process; keep it small on serverless hosts, where every instance has its own pool
+export async function openDb(opts: { url?: string; dataDir?: string | 'memory'; poolMax?: number }): Promise<Db> {
+  return opts.url ? openPg(opts.url, opts.poolMax ?? 10) : openPglite(opts.dataDir ?? 'memory');
 }
 
 type PgliteLike = Pick<PGlite, 'query' | 'exec'>;
@@ -38,8 +39,8 @@ async function openPglite(dataDir: string): Promise<Db> {
   return wrapPglite(db, db);
 }
 
-async function openPg(url: string): Promise<Db> {
-  const pool = new pg.Pool({ connectionString: url, ssl: { rejectUnauthorized: false }, max: 10 });
+async function openPg(url: string, max: number): Promise<Db> {
+  const pool = new pg.Pool({ connectionString: url, ssl: { rejectUnauthorized: false }, max });
   // Postgres bigint and numeric arrive as strings by default; keep numeric precise (string) but parse counts
   pg.types.setTypeParser(20, (v) => Number(v));
 

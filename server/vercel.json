@@ -1,0 +1,16 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "npm ci --include=dev && npm --prefix ../admin ci --include=dev",
+  "buildCommand": "npm run build && npm run db:setup && npm --prefix ../admin run build && rm -rf public && cp -r ../admin/dist public",
+  "outputDirectory": "public",
+  "env": { "NODEJS_HELPERS": "0" },
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "headers": [
+    { "source": "/assets/(.*)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }] },
+    { "source": "/index.html", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] }
+  ]
+}

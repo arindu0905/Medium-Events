@@ -162,7 +162,7 @@ export default function EditionPage() {
             <div className="mt-3">
               <label htmlFor="e-banner" className="block text-sm font-semibold text-ink mb-1.5">Banner image</label>
               <input id="e-banner" type="file" accept="image/jpeg,image/png,image/webp" onChange={pickBanner} className="block text-sm text-body" />
-              <p className="mt-1 text-xs text-muted">JPG, PNG or WebP, up to 5 MB.</p>
+              <p className="mt-1 text-xs text-muted">JPG, PNG or WebP, up to 4 MB.</p>
               {bannerError && (
                 <p role="alert" className="mt-1 text-sm text-red-700">
                   {bannerError}

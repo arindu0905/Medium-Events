@@ -16,3 +16,8 @@ server/.env
 server/dist/
 src/data/published.json
 public/images/cms/
+
+# Vercel: built admin app copied here at build time, and the local project link
+server/public/
+server/.vercel/
+.vercel/
