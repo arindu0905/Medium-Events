@@ -31,10 +31,10 @@ const headings = async () => {
 
 describe('Reports', () => {
   it.each([
-    ['admin', ['Post-event report', 'Sponsorship report', 'Enquiries report']],
-    ['events', ['Post-event report']],
+    ['admin', ['Post-event report', 'Sponsorship report', 'Enquiries report', 'Delegates report', 'Budget report']],
+    ['events', ['Post-event report', 'Delegates report']],
     ['sales', ['Sponsorship report', 'Enquiries report']],
-    ['finance', ['Sponsorship report']],
+    ['finance', ['Sponsorship report', 'Budget report']],
   ] as [StaffRole, string[]][])('offers %s only their reports', async (role, expected) => {
     renderAs(role);
     expect(await headings()).toEqual(expected);
@@ -67,6 +67,27 @@ describe('Reports', () => {
     fireEvent.change(within(section).getByLabelText('Status'), { target: { value: 'won' } });
     fireEvent.change(within(section).getByLabelText('Source'), { target: { value: 'website' } });
     expect(within(section).getByRole('link', { name: 'Download Excel' }).getAttribute('href')).toBe('/api/reports/enquiries.xlsx?status=won&source=website');
+  });
+});
+
+describe('Edition reports', () => {
+  it('builds the delegates download with its filters', async () => {
+    renderAs('events');
+    const section = (await screen.findByRole('heading', { name: 'Delegates report' })).closest('section')!;
+    expect(within(section).getByRole('link', { name: 'Download Excel' }).getAttribute('href')).toBe('/api/reports/delegates.xlsx');
+    await within(section).findByRole('option', { name: 'Construction Industry Forum 2025' });
+    fireEvent.change(within(section).getByLabelText('Event'), { target: { value: 'e-cif-2025' } });
+    fireEvent.change(within(section).getByLabelText('Status'), { target: { value: 'attended' } });
+    expect(within(section).getByRole('link', { name: 'Download Excel' }).getAttribute('href')).toBe('/api/reports/delegates.xlsx?edition_id=e-cif-2025&status=attended');
+  });
+
+  it('builds the budget download for one event or all of them', async () => {
+    renderAs('finance');
+    const section = (await screen.findByRole('heading', { name: 'Budget report' })).closest('section')!;
+    expect(within(section).getByRole('link', { name: 'Download Excel' }).getAttribute('href')).toBe('/api/reports/budget.xlsx');
+    await within(section).findByRole('option', { name: 'Construction Industry Forum 2025' });
+    fireEvent.change(within(section).getByLabelText('Event'), { target: { value: 'e-cif-2025' } });
+    expect(within(section).getByRole('link', { name: 'Download Excel' }).getAttribute('href')).toBe('/api/reports/budget.xlsx?edition_id=e-cif-2025');
   });
 });
 

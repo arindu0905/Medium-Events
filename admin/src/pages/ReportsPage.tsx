@@ -3,6 +3,7 @@ import { Download } from 'lucide-react';
 import { useAuth } from '../lib/auth';
 import { listEditions } from '../lib/events';
 import { SOURCE_LABELS, STATUS_LABELS } from '../lib/enquiries';
+import { DELEGATE_CATEGORY_LABELS, DELEGATE_STATUS_LABELS } from '../lib/operations';
 import { can } from '../lib/permissions';
 import { useLoad } from '../lib/useLoad';
 import type { Edition } from '../lib/types';
@@ -25,6 +26,8 @@ export default function ReportsPage() {
       {can(role, 'reports.postEvent') && <PostEventReport editions={editions ?? []} />}
       {can(role, 'reports.sponsorship') && <SponsorshipReport editions={editions ?? []} />}
       {can(role, 'reports.enquiries') && <EnquiriesReport />}
+      {can(role, 'reports.delegates') && <DelegatesReport editions={editions ?? []} />}
+      {can(role, 'reports.budget') && <BudgetReport editions={editions ?? []} />}
     </section>
   );
 }
@@ -134,6 +137,47 @@ function EnquiriesReport() {
       </div>
       <div className="mt-4">
         <DownloadLink href={reportUrl('enquiries.xlsx', f)} label="Download Excel" primary />
+      </div>
+    </Card>
+  );
+}
+
+function DelegatesReport({ editions }: { editions: Edition[] }) {
+  const [f, setF] = useState({ edition_id: '', status: '', category: '' });
+  const select = (id: string, label: string, key: 'status' | 'category', options: Record<string, string>, all: string) => (
+    <div>
+      <label htmlFor={id} className="block text-sm font-semibold text-ink mb-1.5">{label}</label>
+      <select id={id} value={f[key]} onChange={(e) => setF((x) => ({ ...x, [key]: e.target.value }))} className={FIELD}>
+        <option value="">{all}</option>
+        {Object.entries(options).map(([value, text]) => (
+          <option key={value} value={value}>
+            {text}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+  return (
+    <Card title="Delegates report" intro="The delegate register: contact details, category, status and check-in time for each person.">
+      <div className="grid gap-4 sm:grid-cols-3">
+        <EditionSelect id="dg-edition" value={f.edition_id} onChange={(v) => setF((x) => ({ ...x, edition_id: v }))} editions={editions} any="All events" />
+        {select('dg-status', 'Status', 'status', DELEGATE_STATUS_LABELS, 'All statuses')}
+        {select('dg-category', 'Category', 'category', DELEGATE_CATEGORY_LABELS, 'All categories')}
+      </div>
+      <div className="mt-4">
+        <DownloadLink href={reportUrl('delegates.xlsx', f)} label="Download Excel" primary />
+      </div>
+    </Card>
+  );
+}
+
+function BudgetReport({ editions }: { editions: Edition[] }) {
+  const [editionId, setEditionId] = useState('');
+  return (
+    <Card title="Budget report" intro="Sponsorship income against expenses per currency, with every expense listed.">
+      <div className="grid gap-4 sm:grid-cols-[1fr_auto] items-end">
+        <EditionSelect id="bg-edition" value={editionId} onChange={setEditionId} editions={editions} any="All events" />
+        <DownloadLink href={reportUrl('budget.xlsx', { edition_id: editionId })} label="Download Excel" primary />
       </div>
     </Card>
   );

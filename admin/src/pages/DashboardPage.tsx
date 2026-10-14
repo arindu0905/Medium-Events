@@ -6,7 +6,7 @@ import { useLoad } from '../lib/useLoad';
 import { ROLE_LABELS } from '../lib/types';
 
 const DESCRIPTIONS: Record<string, string> = {
-  events: 'Event series, editions, banners and partners.',
+  events: 'Event series and editions: programme, delegates, tasks and budget.',
   publish: 'Update the website with the latest events.',
   enquiries: 'Leads from the website and enquiries taken by phone or in person.',
   sponsors: 'Sponsor companies and their contacts.',

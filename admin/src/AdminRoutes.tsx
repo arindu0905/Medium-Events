@@ -1,7 +1,7 @@
 import React from 'react';
 import { Route, Routes } from 'react-router';
 import { AuthProvider } from './lib/auth';
-import { rolesFor } from './lib/permissions';
+import { rolesFor, rolesWith } from './lib/permissions';
 import { RequireAuth } from './components/RequireAuth';
 import { Layout } from './components/Layout';
 import LoginPage from './pages/LoginPage';
@@ -14,6 +14,10 @@ import AccountPage from './pages/AccountPage';
 import EventsPage from './pages/EventsPage';
 import SeriesPage from './pages/SeriesPage';
 import EditionPage from './pages/EditionPage';
+import EditionProgrammePage from './pages/EditionProgrammePage';
+import EditionDelegatesPage from './pages/EditionDelegatesPage';
+import EditionTasksPage from './pages/EditionTasksPage';
+import EditionBudgetPage from './pages/EditionBudgetPage';
 import PublishPage from './pages/PublishPage';
 import EnquiriesPage from './pages/EnquiriesPage';
 import EnquiryPage from './pages/EnquiryPage';
@@ -38,6 +42,10 @@ export function AdminRoutes() {
             <Route element={<RequireAuth roles={rolesFor('events')} />}>
               <Route path="/events" element={<EventsPage />} />
               <Route path="/events/editions/:id" element={<EditionPage />} />
+              <Route path="/events/editions/:id/programme" element={<EditionProgrammePage />} />
+              <Route path="/events/editions/:id/tasks" element={<EditionTasksPage />} />
+              <Route path="/events/editions/:id/delegates" element={<RequireAuth roles={rolesWith('delegates.read')}><EditionDelegatesPage /></RequireAuth>} />
+              <Route path="/events/editions/:id/budget" element={<RequireAuth roles={rolesWith('expenses.read')}><EditionBudgetPage /></RequireAuth>} />
               <Route path="/events/:seriesId/editions/new" element={<EditionPage />} />
               <Route path="/events/:id" element={<SeriesPage />} />
             </Route>

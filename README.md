@@ -85,11 +85,15 @@ Open http://localhost:3010 (or use **Staff login** in the website footer). The a
 |---|---|---|
 | Dashboard | everyone | Figures for their role (enquiries, money per currency, upcoming events) |
 | Events | everyone reads; admin and events team edit | Series, editions, banners, partners, attendance and outcome notes |
+| Programme (inside an edition) | everyone reads; admin and events team edit | Speakers and sessions in running order, by day |
+| Delegates (inside an edition) | admin and events team edit; sales read | The delegate register, search, and check-in at the door |
+| Tasks (inside an edition) | everyone reads; admin and events team edit | Planning checklist with due dates and who is responsible |
+| Budget (inside an edition) | admin and finance | Expenses per currency, set against sponsorship income; the events team never sees it |
 | Publish | admin, events team | Sends events to the website |
 | Enquiries | admin, sales | Website and manual leads, status, assignee, notes |
 | Sponsors and Deals | everyone reads; admin and sales edit | Sponsor companies and deals per event in MVR or USD; the events team never sees amounts |
 | Payments (inside a deal) | admin and finance record; sales read; admin deletes | Received and outstanding per deal |
-| Reports | per role | Post-event (PDF), sponsorship (PDF, Excel), enquiries (Excel) |
+| Reports | per role | Post-event (PDF), sponsorship (PDF, Excel), enquiries (Excel), delegates (Excel), budget (Excel) |
 | Staff, Activity log, My account | as before | |
 
 ### Where the data lives
@@ -101,6 +105,7 @@ Open http://localhost:3010 (or use **Staff login** in the website footer). The a
 
 - Staff manage event series, editions, banners and partners under **Events**. The admin starts with MEDIUM's nine past events, copied from the website.
 - **Publish** sends them to the website: set `VITE_ADMIN_API_URL` (the admin server's address) in the website's `.env`, and `npm run build` downloads the published events and banners before building. Without it, or before the first publish, the site uses its built-in event list.
+- Programme, delegates, tasks and budget are for running the event; they stay in the admin and are not published to the website. An edition with deals, delegates or expenses can't be deleted (cancel it instead); its tasks and programme are deleted with it.
 - To rebuild the site automatically after publishing, set `SITE_DEPLOY_HOOK_URL` in `server/.env` to your host's deploy hook (Netlify, Vercel and Cloudflare Pages all provide one), and `PUBLIC_SITE_ORIGIN` to the website's address.
 
 ### Production
@@ -110,4 +115,5 @@ Build both with `npm --prefix server run build` and `npm --prefix admin run buil
 | Command | What it does |
 |---|---|
 | `npm --prefix server test` | Server tests (sign-in, permissions for every role, events, publishing, enquiries, sponsors, deals, payments, reports) |
+| `npm --prefix server run smoke` | Calls every API route over real HTTP as each role, against a throwaway in-memory database, and prints one line per call |
 | `npm --prefix admin test` | Admin app tests |

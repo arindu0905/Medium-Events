@@ -5,6 +5,7 @@ import { checkImage, deleteEdition, fileUrl, getEdition, getSeries, saveEdition,
 import { can } from '../lib/permissions';
 import { useLoad } from '../lib/useLoad';
 import type { Edition, EditionStatus } from '../lib/types';
+import { EditionTabs } from '../components/EditionTabs';
 import { PartnersPanel } from '../components/PartnersPanel';
 import { Confirm, DANGER, FIELD, Field, Loading, Notice, PageHeader, PRIMARY, type Message } from '../components/ui';
 import { READ_ONLY_EVENTS } from './EventsPage';
@@ -119,9 +120,10 @@ export default function EditionPage() {
           </button>
         )}
       </PageHeader>
+      {!isNew && <EditionTabs editionId={id!} />}
       {!canWrite && <p className="mt-4 text-sm text-muted">{READ_ONLY_EVENTS}</p>}
       {confirming && (
-        <Confirm title={`Delete ${edition!.name}?`} detail="This can't be undone." confirmLabel={`Yes, delete ${edition!.name}`} onConfirm={remove} onCancel={() => setConfirming(false)} />
+        <Confirm title={`Delete ${edition!.name}?`} detail="This can't be undone. Its tasks and programme are deleted with it; an edition with deals, delegates or expenses can't be deleted." confirmLabel={`Yes, delete ${edition!.name}`} onConfirm={remove} onCancel={() => setConfirming(false)} />
       )}
       <Notice message={message} />
 

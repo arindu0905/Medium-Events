@@ -15,6 +15,12 @@ export const PERMISSIONS = {
   'events.read': ALL,
   'events.write': ['admin', 'events'],
   'events.publish': ['admin', 'events'],
+  // Planning checklist per edition
+  'tasks.read': ALL,
+  'tasks.write': ['admin', 'events'],
+  // The delegate register holds personal details; sales may look people up but not change them
+  'delegates.read': ['admin', 'events', 'sales'],
+  'delegates.write': ['admin', 'events'],
   'enquiries.access': ['admin', 'sales'],
   'sponsors.read': ALL,
   'sponsors.write': ['admin', 'sales'],
@@ -25,9 +31,14 @@ export const PERMISSIONS = {
   'payments.read': ['admin', 'sales', 'finance'],
   'payments.write': ['admin', 'finance'],
   'payments.delete': ['admin'],
+  // What an edition costs: money, so never the events team
+  'expenses.read': ['admin', 'finance'],
+  'expenses.write': ['admin', 'finance'],
   'reports.postEvent': ['admin', 'events'],
   'reports.sponsorship': ['admin', 'sales', 'finance'],
   'reports.enquiries': ['admin', 'sales'],
+  'reports.delegates': ['admin', 'events'],
+  'reports.budget': ['admin', 'finance'],
 } satisfies Record<string, Role[]>;
 
 export type Permission = keyof typeof PERMISSIONS;

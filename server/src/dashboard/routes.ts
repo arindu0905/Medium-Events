@@ -54,6 +54,12 @@ export function dashboardRoutes(ctx: AppContext) {
 
       if (can(role, 'events.publish')) {
         cards.push({ id: 'upcoming_editions', label: 'Upcoming events', value: await count("select count(*)::int as n from editions where status = 'upcoming'") });
+        // Overdue is judged against today's date in the Maldives
+        const [tasks] = await ctx.db.query<{ open: number; overdue: number }>(
+          "select count(*)::int as open, count(*) filter (where due_date < $1::date)::int as overdue from tasks where status <> 'done'",
+          [new Date(now.getTime() + 5 * 60 * 60 * 1000).toISOString().slice(0, 10)],
+        );
+        cards.push({ id: 'open_tasks', label: 'Open tasks', value: tasks.overdue ? `${tasks.open} (${tasks.overdue} overdue)` : String(tasks.open) });
         const [last] = await ctx.db.query<{ published_at: Date }>('select published_at from published_snapshots order by id desc limit 1');
         cards.push({ id: 'last_publish', label: 'Website last updated', value: last ? maldivesTime(new Date(last.published_at)) : 'Never' });
       }

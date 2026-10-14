@@ -13,6 +13,10 @@ import { enquiryRoutes } from './enquiries/routes.js';
 import { salesRoutes } from './sales/routes.js';
 import { reportRoutes } from './reports/routes.js';
 import { dashboardRoutes } from './dashboard/routes.js';
+import { taskRoutes } from './tasks/routes.js';
+import { programmeRoutes } from './programme/routes.js';
+import { delegateRoutes } from './delegates/routes.js';
+import { expenseRoutes } from './expenses/routes.js';
 import { HttpError } from './http.js';
 
 export interface AppContext {
@@ -62,6 +66,12 @@ export function createApp(opts: { db: Db; now?: () => Date; fetch?: typeof fetch
   app.use('/api/sponsors', sales.sponsors);
   app.use('/api/deals', sales.deals);
   app.use('/api/payments', sales.payments);
+  app.use('/api/tasks', taskRoutes(ctx));
+  const programme = programmeRoutes(ctx);
+  app.use('/api/speakers', programme.speakers);
+  app.use('/api/sessions', programme.sessions);
+  app.use('/api/delegates', delegateRoutes(ctx));
+  app.use('/api/expenses', expenseRoutes(ctx));
   app.use('/api/reports', reportRoutes(ctx));
   app.use('/api/dashboard', dashboardRoutes(ctx));
 

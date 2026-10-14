@@ -253,6 +253,13 @@ export function eventRoutes(ctx: AppContext) {
         if ((await tx.query('select 1 from deals where edition_id = $1', [req.params.id])).length) {
           throw new HttpError(409, 'This edition has sponsorship deals. Cancel it instead, or move its deals first.');
         }
+        // Delegates and expenses are records worth keeping; the checklist and programme go with the edition
+        if ((await tx.query('select 1 from delegates where edition_id = $1 limit 1', [req.params.id])).length) {
+          throw new HttpError(409, 'This edition has delegates on its register. Cancel it instead, or remove them first.');
+        }
+        if ((await tx.query('select 1 from expenses where edition_id = $1 limit 1', [req.params.id])).length) {
+          throw new HttpError(409, 'This edition has expenses recorded. Cancel it instead, or remove them first.');
+        }
         await tx.query('delete from editions where id = $1', [req.params.id]);
         return { id: req.params.id, action: 'delete', changes: { name: before.name } };
       });

@@ -40,6 +40,18 @@ export async function postEventPdf(db: Db, editionId: string, now: Date): Promis
     [editionId],
   );
 
+  const sessions = await db.query<{ day: string; start_time: string; end_time: string | null; title: string; speakers: string | null }>(
+    `select s.day::text as day, s.start_time, s.end_time, s.title,
+            (select string_agg(sp.full_name, ', ' order by sp.sort_order, sp.full_name)
+               from programme_session_speakers ss join speakers sp on sp.id = ss.speaker_id where ss.session_id = s.id) as speakers
+       from programme_sessions s where s.edition_id = $1 order by s.day, s.start_time, s.title`,
+    [editionId],
+  );
+  const [register] = await db.query<{ registered: number; checked_in: number }>(
+    "select count(*) filter (where status <> 'cancelled')::int as registered, count(checked_in_at)::int as checked_in from delegates where edition_id = $1",
+    [editionId],
+  );
+
   const dates = e.end_date && e.end_date !== e.start_date ? `${day(e.start_date)} – ${day(e.end_date)}` : day(e.start_date);
   const pdf = await renderPdf(`${e.name} post-event report`, e.series_name, now, (doc) => {
     // pdfkit draws JPEG and PNG banners; WebP ones are left out
@@ -58,10 +70,22 @@ export async function postEventPdf(db: Db, editionId: string, now: Date): Promis
       ['Status', e.status === 'cancelled' ? 'Cancelled' : e.status === 'past' ? 'Held' : 'Upcoming'],
       ['RSVPs', e.rsvp_count],
       ['Attendance', e.attendance],
+      // From the delegate register, when it was used for this edition
+      ['Delegates registered', register.registered || null],
+      ['Delegates checked in', register.registered ? register.checked_in : null],
     ]);
     if (e.description) {
       doc.moveDown(0.5);
       doc.text(e.description);
+    }
+    if (sessions.length) {
+      heading(doc, 'Programme');
+      const multiDay = new Set(sessions.map((x) => x.day)).size > 1;
+      doc.text(
+        sessions
+          .map((x) => `${multiDay ? `${day(x.day)}, ` : ''}${x.start_time}${x.end_time ? `-${x.end_time}` : ''}  ${x.title}${x.speakers ? ` (${x.speakers})` : ''}`)
+          .join('\n'),
+      );
     }
     heading(doc, 'Partners');
     doc.text(partners.length ? partners.map((p) => (p.role ? `${p.name} (${p.role})` : p.name)).join('\n') : 'None recorded.');

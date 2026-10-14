@@ -14,6 +14,10 @@ const EXPECTED: Record<Permission, Role[]> = {
   'events.read': ['admin', 'sales', 'events', 'finance'],
   'events.write': ['admin', 'events'],
   'events.publish': ['admin', 'events'],
+  'tasks.read': ['admin', 'sales', 'events', 'finance'],
+  'tasks.write': ['admin', 'events'],
+  'delegates.read': ['admin', 'events', 'sales'],
+  'delegates.write': ['admin', 'events'],
   'enquiries.access': ['admin', 'sales'],
   'sponsors.read': ['admin', 'sales', 'events', 'finance'],
   'sponsors.write': ['admin', 'sales'],
@@ -23,9 +27,13 @@ const EXPECTED: Record<Permission, Role[]> = {
   'payments.read': ['admin', 'sales', 'finance'],
   'payments.write': ['admin', 'finance'],
   'payments.delete': ['admin'],
+  'expenses.read': ['admin', 'finance'],
+  'expenses.write': ['admin', 'finance'],
   'reports.postEvent': ['admin', 'events'],
   'reports.sponsorship': ['admin', 'sales', 'finance'],
   'reports.enquiries': ['admin', 'sales'],
+  'reports.delegates': ['admin', 'events'],
+  'reports.budget': ['admin', 'finance'],
 };
 
 const ROLES: Role[] = ['admin', 'sales', 'events', 'finance'];
@@ -42,6 +50,8 @@ describe('permission matrix', () => {
   it('never lets events see amounts or payments', () => {
     expect(can('events', 'deals.readAmounts')).toBe(false);
     expect(can('events', 'payments.read')).toBe(false);
+    expect(can('events', 'expenses.read')).toBe(false);
+    expect(can('events', 'reports.budget')).toBe(false);
   });
 });
 

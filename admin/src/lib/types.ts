@@ -180,3 +180,104 @@ export interface Payment {
   recorded_by_name: string | null;
   created_at: string;
 }
+
+// ---- running an edition: tasks, programme, delegates, expenses (server/src/{tasks,programme,delegates,expenses}) ----
+export type TaskStatus = 'todo' | 'in_progress' | 'done';
+
+export interface Task {
+  id: string;
+  edition_id: string;
+  edition_name: string;
+  title: string;
+  notes: string;
+  due_date: string | null;
+  status: TaskStatus;
+  assignee_id: string | null;
+  assignee_name: string | null;
+  completed_at: string | null;
+  created_at: string;
+}
+
+export interface Speaker {
+  id: string;
+  edition_id: string;
+  full_name: string;
+  job_title: string;
+  organisation: string;
+  bio: string;
+  sort_order: number;
+  session_count: number;
+}
+
+export type SessionKind = 'keynote' | 'panel' | 'presentation' | 'workshop' | 'ceremony' | 'networking' | 'break' | 'other';
+
+export interface ProgrammeSession {
+  id: string;
+  edition_id: string;
+  title: string;
+  day: string;
+  start_time: string;
+  end_time: string | null;
+  room: string;
+  kind: SessionKind;
+  description: string;
+  speakers: { id: string; full_name: string }[];
+}
+
+export type DelegateCategory = 'delegate' | 'speaker' | 'sponsor' | 'exhibitor' | 'vip' | 'media' | 'staff';
+export type DelegateStatus = 'invited' | 'registered' | 'confirmed' | 'attended' | 'cancelled' | 'no_show';
+
+export interface Delegate {
+  id: string;
+  edition_id: string;
+  edition_name: string;
+  full_name: string;
+  company: string;
+  job_title: string;
+  email: string;
+  phone: string;
+  category: DelegateCategory;
+  status: DelegateStatus;
+  checked_in_at: string | null;
+  notes: string;
+  created_at: string;
+}
+
+export interface DelegateSummary {
+  total: number;
+  checked_in: number;
+  by_status: Record<DelegateStatus, number>;
+}
+
+export type ExpenseCategory = 'venue' | 'catering' | 'av_production' | 'marketing' | 'printing' | 'travel' | 'accommodation' | 'staffing' | 'speakers' | 'decor' | 'other';
+export type ExpenseStatus = 'planned' | 'committed' | 'paid';
+
+export interface Expense {
+  id: string;
+  edition_id: string;
+  edition_name: string;
+  category: ExpenseCategory;
+  description: string;
+  vendor: string;
+  amount: number;
+  currency: Currency;
+  status: ExpenseStatus;
+  paid_on: string | null;
+  invoice_no: string;
+  notes: string;
+  created_by_name: string | null;
+  created_at: string;
+}
+
+// GET /api/expenses/summary: one line per currency
+export interface BudgetLine {
+  currency: Currency;
+  income_confirmed: number;
+  income_received: number;
+  expenses_planned: number;
+  expenses_committed: number;
+  expenses_paid: number;
+  expenses_total: number;
+  projected_result: number;
+  cash_result: number;
+}

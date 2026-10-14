@@ -16,7 +16,7 @@ export const NAV_ITEMS: { id: SectionId; label: string; path: string; permission
   { id: 'enquiries', label: 'Enquiries', path: '/enquiries', permission: 'enquiries.access' },
   { id: 'sponsors', label: 'Sponsors', path: '/sponsors', permission: 'sponsors.read' },
   { id: 'deals', label: 'Deals', path: '/deals', permission: 'deals.read' },
-  { id: 'reports', label: 'Reports', path: '/reports', permission: ['reports.postEvent', 'reports.sponsorship', 'reports.enquiries'] },
+  { id: 'reports', label: 'Reports', path: '/reports', permission: ['reports.postEvent', 'reports.sponsorship', 'reports.enquiries', 'reports.delegates', 'reports.budget'] },
   { id: 'staff', label: 'Staff', path: '/staff', permission: 'staff.write' },
   { id: 'activity', label: 'Activity log', path: '/activity', permission: null },
   { id: 'account', label: 'My account', path: '/account', permission: null },
@@ -31,5 +31,8 @@ export function canSee(role: StaffRole, section: SectionId): boolean {
 export function rolesFor(section: SectionId): StaffRole[] {
   return (['admin', 'sales', 'events', 'finance'] as StaffRole[]).filter((role) => canSee(role, section));
 }
+
+// Roles holding a permission, for guarding a page that isn't a menu section
+export const rolesWith = (permission: Permission): StaffRole[] => (['admin', 'sales', 'events', 'finance'] as StaffRole[]).filter((role) => can(role, permission));
 
 export const navFor = (role: StaffRole | null) => NAV_ITEMS.filter((item) => role && canSee(role, item.id));

@@ -3,6 +3,8 @@ import type { AppContext } from '../app.js';
 import { recordActivity } from '../activity.js';
 import { currentUser, requirePermission } from '../auth/middleware.js';
 import { route } from '../http.js';
+import { budgetXlsx } from './budget.js';
+import { delegatesXlsx } from './delegates.js';
 import { enquiriesXlsx } from './enquiries.js';
 import { postEventPdf } from './postEvent.js';
 import { parseSponsorshipFilters, sponsorshipPdf, sponsorshipXlsx } from './sponsorship.js';
@@ -57,6 +59,24 @@ export function reportRoutes(ctx: AppContext) {
     route(async (req, res) => {
       const filters = Object.fromEntries(Object.entries(req.query).filter(([k, v]) => ['status', 'source', 'from', 'to'].includes(k) && v));
       await send(res, 'enquiries', filters, { name: 'enquiries-report.xlsx', type: XLSX, body: await enquiriesXlsx(ctx.db, filters) });
+    }),
+  );
+
+  router.get(
+    '/delegates.xlsx',
+    requirePermission('reports.delegates'),
+    route(async (req, res) => {
+      const filters = Object.fromEntries(Object.entries(req.query).filter(([k, v]) => ['edition_id', 'status', 'category'].includes(k) && v));
+      await send(res, 'delegates', filters, { name: 'delegates-report.xlsx', type: XLSX, body: await delegatesXlsx(ctx.db, filters) });
+    }),
+  );
+
+  router.get(
+    '/budget.xlsx',
+    requirePermission('reports.budget'),
+    route(async (req, res) => {
+      const filters = Object.fromEntries(Object.entries(req.query).filter(([k, v]) => k === 'edition_id' && v));
+      await send(res, 'budget', filters, { name: 'budget-report.xlsx', type: XLSX, body: await budgetXlsx(ctx.db, filters) });
     }),
   );
 
